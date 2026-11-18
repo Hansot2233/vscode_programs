@@ -1,0 +1,2 @@
+def rates(): 
+    return {'Common':70,'Rare':20,'Epic':8,'Legendary':2}
