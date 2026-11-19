@@ -1,45 +1,112 @@
 import random
 from player import Player
+from player_database import PLAYER_DATABASE
+
 class GameData:
+
     def __init__(self):
-        self.level=1
-        self.coins=1000
-        self.spins=10
+
+        self.level = 1
+        self.coins = 1000
+        self.gems = 100
+
+        # All owned players
+        self.roster = []
+
+        for data in PLAYER_DATABASE["Starter"]:
+
+            self.roster.append(
+                Player(
+                    data["name"],
+                    data["position"],
+                    "Starter",
+                    data["attack"],
+                    data["block"],
+                    data["receive"],
+                    data["setting"],
+                    data["serve"]
+                )
+            )
+
+        # Active team
         self.lineup = {
-            "LS1": None,
-            "LS2": None,
-            "MB1": None,
-            "MB2": None,
-            "S": None,
-            "RS": None,
-            "L": None
+            "LS1": self.roster[0],
+            "LS2": self.roster[1],
+            "MB1": self.roster[2],
+            "MB2": self.roster[3],
+            "S": self.roster[5],
+            "RS": self.roster[4],
+            "L": self.roster[6]
         }
 
     def generate_player(self):
-        r=random.random()
-        rarity,base=('Common',60) if r<.7 else ('Rare',85) if r<.9 else ('Epic',115) if r<.98 else ('Legendary',150)
-        return Player(random.choice(['Aoi','Kai','Ren','Mika']),random.choice(['LS','MB','S','RS','L']),rarity,base,base,base,base,base)
+
+        r = random.random()
+
+        if r < 0.70:
+            rarity = "Common"
+
+        elif r < 0.90:
+            rarity = "Rare"
+
+        elif r < 0.98:
+            rarity = "Epic"
+
+        else:
+            rarity = "Legendary"
+
+        data = random.choice(
+            PLAYER_DATABASE[rarity]
+        )
+
+        return Player(
+            name=data["name"],
+            position=data["position"],
+            rarity=rarity,
+
+            attack=data["attack"],
+            block=data["block"],
+            receive=data["receive"],
+            setting=data["setting"],
+            serve=data["serve"]
+        )
+
     def team_rating(self):
 
-        total = 0
-        count = 0
+        players = [
+            p
+            for p in self.lineup.values()
+            if p is not None
+        ]
 
-        for player in self.lineup.values():
-
-            if player is not None:
-                total += player.strength
-                count += 1
-
-        if count == 0:
+        if not players:
             return 0
 
-        return int(total / count)
+        return int(
+            sum(p.strength for p in players)
+            / len(players)
+        )
 
     def lineup_complete(self):
 
-        for player in self.lineup.values():
+        return all(
+            player is not None
+            for player in self.lineup.values()
+        )
 
-            if player is None:
-                return False
+    def generate_player_of_rarity(self, rarity):
 
-        return True
+        data = random.choice(
+            PLAYER_DATABASE[rarity]
+        )
+
+        return Player(
+            name=data["name"],
+            position=data["position"],
+            rarity=rarity,
+            attack=data["attack"],
+            block=data["block"],
+            receive=data["receive"],
+            setting=data["setting"],
+            serve=data["serve"]
+        )

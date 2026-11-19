@@ -1,4 +1,12 @@
-from PyQt6.QtWidgets import *
+from PyQt6.QtWidgets import (
+    QWidget,
+    QPushButton,
+    QLabel,
+    QVBoxLayout,
+    QMessageBox, 
+    QListWidget
+)
+
 
 class GachaScreen(QWidget):
 
@@ -10,37 +18,147 @@ class GachaScreen(QWidget):
 
         layout = QVBoxLayout()
 
-        self.result = QLabel()
+        self.info = QLabel()
+        layout.addWidget(self.info)
 
-        self.button = QPushButton("Lucky Spin")
+        self.result_label = QLabel("No player recruited yet.")
+        self.result_label.setWordWrap(True)
+        layout.addWidget(self.result_label)
+        self.history = QListWidget()
+        layout.addWidget(self.history)
 
-        self.button.clicked.connect(self.spin)
+        self.wheel1 = QPushButton(
+            "Budget Wheel (50 Gems)"
+        )
 
-        layout.addWidget(self.result)
-        layout.addWidget(self.button)
+        self.wheel2 = QPushButton(
+            "Premium Wheel (150 Gems)"
+        )
+
+        self.wheel3 = QPushButton(
+            "Legend Wheel (500 Gems)"
+        )
+
+        self.wheel1.clicked.connect(
+            self.spin_budget
+        )
+
+        self.wheel2.clicked.connect(
+            self.spin_premium
+        )
+
+        self.wheel3.clicked.connect(
+            self.spin_legend
+        )
+
+        layout.addWidget(self.wheel1)
+        layout.addWidget(self.wheel2)
+        layout.addWidget(self.wheel3)
 
         self.setLayout(layout)
 
-    def spin(self):
+        self.refresh()
 
-        if self.game.spins <= 0:
-            self.result.setText("No Spins")
+    def refresh(self):
+
+        self.info.setText(
+            f"Gems: {self.game.gems}"
+        )
+
+    def reward_player(self, rarity_table):
+
+        import random
+
+        if self.game.gems < rarity_table["cost"]:
+
+            self.info.setText(
+                f"Not enough gems!\n"
+                f"Need {rarity_table['cost']}\n"
+                f"Current: {self.game.gems}"
+            )
             return
 
-        self.game.spins -= 1
+        self.game.gems -= rarity_table["cost"]
 
-        player = self.game.generate_player()
+        r = random.random()
 
-        self.game.roster.append(player)
+        cumulative = 0
 
-        self.result.setText(
-            f"""
-Pulled:
+        for rarity, chance in rarity_table["odds"]:
 
-{player.name}
+            cumulative += chance
 
-{player.position}
+            if r <= cumulative:
 
-{player.rarity}
-"""
-        )
+                player = self.game.generate_player_of_rarity(
+                    rarity
+                )
+
+                self.game.roster.append(player)
+
+                rarity_colors = {
+                    "Common": "green",
+                    "Rare": "blue",
+                    "Epic": "purple",
+                    "Legendary": "orange"
+                }
+
+                color = rarity_colors.get(
+                    player.rarity,
+                    "black"
+                )
+
+                self.result_label.setText(
+                    f"<h2>{player.name}</h2>"
+                    f"<b>Position:</b> {player.position}<br>"
+                    f"<b>Rarity:</b> "
+                    f"<font color='{color}'>{player.rarity}</font><br>"
+                    f"<b>STR:</b> {player.strength}"
+                )
+
+                self.history.insertItem(
+                    0,
+                    f"{player.rarity} | "
+                    f"{player.name} | "
+                    f"{player.position} | "
+                    f"STR {player.strength}"
+                )
+
+                break
+
+        self.refresh()
+
+    def spin_budget(self):
+
+        self.reward_player({
+            "cost": 50,
+            "odds": [
+                ("Common", 0.80),
+                ("Rare", 0.15),
+                ("Epic", 0.045),
+                ("Legendary", 0.005)
+            ]
+        })
+
+    def spin_premium(self):
+
+        self.reward_player({
+            "cost": 200,
+            "odds": [
+                ("Common", 0.55),
+                ("Rare", 0.30),
+                ("Epic", 0.12),
+                ("Legendary", 0.03)
+            ]
+        })
+
+    def spin_legend(self):
+
+        self.reward_player({
+            "cost": 600,
+            "odds": [
+                ("Rare", 0.55),
+                ("Epic", 0.36),
+                ("Legendary", 0.09)
+            ]
+        })
