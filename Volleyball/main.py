@@ -1,6 +1,5 @@
 import sys, os
 from PyQt6.QtWidgets import *
-from screens.gacha_screen import GachaScreen
 from game_data import GameData
 from battle_engine import simulate
 from save_manager import save_game,load_game
@@ -9,6 +8,8 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QColor
 from screens.team_screen import TeamScreen
 from screens.player_upgrade_screen import PlayerUpgradeScreen
+from screens.gacha_screen import GachaScreen
+from screens.battle_screen import BattleScreen
 
 SAVE_FILE = os.path.join(
     os.path.dirname(__file__),
@@ -43,7 +44,7 @@ class Main(QMainWindow):
 
     for t, f in [
         ('Recruit Players', self.show_gacha_screen),
-        ('Battle', self.battle),
+        ('Battle', self.show_battle_screen),
         ('Save', self.save)
     ]:
         b = QPushButton(t)
@@ -66,27 +67,29 @@ class Main(QMainWindow):
 
     self.team_screen = TeamScreen(self.g)
     self.gacha_screen = GachaScreen(self.g)
-
+    self.battle_screen = BattleScreen(self.g)
     
 
     self.upgrade_screen = PlayerUpgradeScreen(self.g)
     self.team_screen.open_upgrade_requested.connect(self.show_upgrade_screen)
+    self.battle_screen.start_button.clicked.connect(self.battle)
 
     back_button = QPushButton("Back")
     back_button.clicked.connect(self.show_home_screen)
     back_to_home = QPushButton("Back")
     back_to_home.clicked.connect(self.show_home_screen)
+    battle_back = QPushButton("Back")
+    battle_back.clicked.connect(self.show_home_screen)
 
-    self.gacha_screen.layout().addWidget(
-        back_to_home
-    )
-
-    self.team_screen.layout().addWidget(back_button)
+    self.battle_screen.layout.addWidget(battle_back)
+    self.gacha_screen.layout().addWidget(back_to_home)
+    self.team_screen.layout().addWidget(back_button)    
 
     self.stack.addWidget(self.home_widget)
     self.stack.addWidget(self.team_screen)
     self.stack.addWidget(self.upgrade_screen)
     self.stack.addWidget(self.gacha_screen)
+    self.stack.addWidget(self.battle_screen)
 
     back_to_team = QPushButton("Back")
     back_to_team.clicked.connect(self.show_team_screen)
@@ -168,20 +171,67 @@ class Main(QMainWindow):
 
     if not self.g.lineup_complete():
 
-      QMessageBox.information(
-          self,
-          "Incomplete Team",
-          "Fill all 7 lineup positions first."
-      )
+        QMessageBox.information(
+            self,
+            "Incomplete Team",
+            "Fill all 7 lineup positions first."
+        )
 
-      return
+        return
+
+    winner, set_scores, enemy = simulate(
+      self.g.lineup,
+      self.g
+    )
+
+
+    if winner:
+
+        self.g.level += 1
+        self.g.battle_level += 1
+
+        self.g.current_enemy_team = None
+        self.g.current_enemy_league = None
+
+        reward = (
+            500 +
+            self.g.battle_level * 100
+        )
+
+        gems = (
+            10 +
+            self.g.level // 5
+        )
+
+        self.g.coins += reward
+        self.g.gems += gems
+
+    result_text = (
+      f"{'WIN' if winner else 'LOSS'}\n\n"
+      f"Opponent:\n"
+      f"{enemy}\n\n"
+      f"Set Scores:\n"
+    )
+
+    for score in set_scores:
+        result_text += score + "\n"
+
+    if winner:
+        result_text += (
+          f"Rewards:\n"
+          f"Coins: {reward}\n"
+          f"Gems: {gems}"
+        )
+
+    QMessageBox.information(
+        self,
+        "Match Result",
+        result_text
+    )
+
+    self.battle_screen.refresh()
+    self.refresh()
     
-    w,e=simulate(self.g.team_rating(),self.g.level)
-    if w: 
-      self.g.level+=1
-      self.g.coins+=200
-      self.g.gems+=5
-    QMessageBox.information(self,'Result',('Win' if w else 'Loss')+f' vs {e}'); self.refresh()
   def save(self): 
     save_game(self.g,SAVE_FILE)
 
@@ -203,6 +253,14 @@ class Main(QMainWindow):
 
     self.stack.setCurrentWidget(
         self.gacha_screen
+    )
+
+  def show_battle_screen(self):
+
+    self.battle_screen.refresh()
+
+    self.stack.setCurrentWidget(
+        self.battle_screen
     )
 
 app=QApplication(sys.argv)

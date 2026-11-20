@@ -37,6 +37,7 @@ class HomeScreen(QWidget):
 
         self.info.setText(
             f"Lv {self.game.level} | "
+            f"Stage{self.game.battle_level} | "
             f"Coins {self.game.coins} | "
             f"Gems {self.game.gems} | "
             f"Team Rating {self.game.team_rating()}"

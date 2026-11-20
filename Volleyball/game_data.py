@@ -7,6 +7,7 @@ class GameData:
     def __init__(self):
 
         self.level = 1
+        self.battle_level = 1
         self.coins = 1000
         self.gems = 100
 
@@ -38,6 +39,9 @@ class GameData:
             "RS": self.roster[4],
             "L": self.roster[6]
         }
+
+        self.current_enemy_team = None
+        self.current_enemy_league = None
 
     def generate_player(self):
 
@@ -109,4 +113,21 @@ class GameData:
             receive=data["receive"],
             setting=data["setting"],
             serve=data["serve"]
+        )
+
+    def get_current_enemy(self):
+
+        if self.current_enemy_team is None:
+
+            from battle_engine import get_enemy_team
+
+            self.current_enemy_team, self.current_enemy_league = (
+                get_enemy_team(
+                    self.battle_level
+                )
+            )
+
+        return (
+            self.current_enemy_team,
+            self.current_enemy_league
         )

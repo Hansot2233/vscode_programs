@@ -99,10 +99,9 @@ class TeamScreen(QWidget):
 
         bench_players.sort(
             key=lambda p: (
-                rarity_order.get(p.rarity, 0),
-                p.strength
-            ),
-            reverse=True
+                -rarity_order.get(p.rarity, 0),
+                p.name.lower()
+            )
         )
 
         # Save display order for assignment logic
@@ -119,6 +118,13 @@ class TeamScreen(QWidget):
                 f"{player.rarity} | "
                 f"LV {player.level} | "
                 f"STR {player.strength}"
+            )
+
+            item.setForeground(
+                rarity_colors.get(
+                    player.rarity,
+                    QColor("black")
+                )
             )
 
             item.setData(
@@ -145,15 +151,32 @@ class TeamScreen(QWidget):
                 player
             )
 
+            item.setForeground(
+                rarity_colors.get(
+                player.rarity,
+                QColor("black")
+                )
+            )
+
             self.roster_list.addItem(item)
 
         # Current lineup display
         for slot, player in self.game.lineup.items():
 
             if player:
-                self.lineup_list.addItem(
+
+                item = QListWidgetItem(
                     f"{slot}: {player.name}"
                 )
+
+                item.setForeground(
+                    rarity_colors.get(
+                        player.rarity,
+                        QColor("black")
+                    )
+                )
+
+                self.lineup_list.addItem(item)
             else:
                 self.lineup_list.addItem(
                     f"{slot}: Empty"

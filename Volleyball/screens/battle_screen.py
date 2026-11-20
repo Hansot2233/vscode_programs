@@ -1,5 +1,11 @@
-from PyQt6.QtWidgets import *
-from battle_engine import simulate
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QPushButton
+)
 
 class BattleScreen(QWidget):
 
@@ -9,50 +15,112 @@ class BattleScreen(QWidget):
 
         self.game = game
 
-        layout = QVBoxLayout()
+        self.layout = QVBoxLayout()
 
-        self.result = QLabel()
+        self.title = QLabel()
 
-        self.button = QPushButton(
-            "Battle"
+        self.layout.addWidget(
+            self.title
         )
 
-        self.button.clicked.connect(
-            self.battle
+        team_layout = QHBoxLayout()
+
+        self.user_team = QListWidget()
+        self.enemy_team = QListWidget()
+
+        team_layout.addWidget(
+            self.user_team
         )
 
-        layout.addWidget(self.result)
-        layout.addWidget(self.button)
-
-        self.setLayout(layout)
-
-    def battle(self):
-
-        if not self.game.lineup_complete():
-
-            self.result.setText(
-                "Complete lineup first"
-            )
-
-            return
-
-        win, enemy = simulate(
-            self.game.team_rating(),
-            self.game.level
+        team_layout.addWidget(
+            self.enemy_team
         )
 
-        if win:
+        self.layout.addLayout(
+            team_layout
+        )
 
-            self.game.level += 1
-            self.game.coins += 200
-            self.game.spins += 1
+        self.summary = QLabel()
 
-            self.result.setText(
-                f"Win vs {enemy}"
+        self.layout.addWidget(
+            self.summary
+        )
+
+        self.start_button = QPushButton(
+            "Start Match"
+        )
+
+        self.layout.addWidget(
+            self.start_button
+        )
+
+        self.setLayout(
+            self.layout
+        )
+
+    def refresh(self):
+
+        self.user_team.clear()
+        self.enemy_team.clear()
+
+        enemy_players, league = (
+            self.game.get_current_enemy()
+        )
+
+        self.enemy_players = enemy_players
+
+        self.title.setText(
+            f"Opponent: {league}"
+        )
+
+        player_total = 0
+
+        for slot, player in (
+            self.game.lineup.items()
+        ):
+
+            if player:
+
+                self.user_team.addItem(
+                    f"{slot} | "
+                    f"{player.name} | "
+                    f"{player.strength}"
+                )
+
+                player_total += (
+                    player.strength
+                )
+
+        enemy_total = 0
+
+        positions = [
+            "LS1",
+            "LS2",
+            "MB1",
+            "MB2",
+            "S",
+            "RS",
+            "L"
+        ]
+
+        for slot, player in zip(
+            positions,
+            enemy_players
+        ):
+
+            self.enemy_team.addItem(
+                f"{slot} | "
+                f"{player.name} | "
+                f"{player.strength}"
             )
 
-        else:
-
-            self.result.setText(
-                f"Lost vs {enemy}"
+            enemy_total += (
+                player.strength
             )
+
+        self.summary.setText(
+            f"Your Rating: "
+            f"{player_total // 7}\n\n"
+            f"Enemy Rating: "
+            f"{enemy_total // 7}"
+        )

@@ -14,6 +14,9 @@ def save_game(game, path):
     data = {
 
         "level": game.level,
+        "battle_level": game.battle_level,
+        "current_enemy_league": game.current_enemy_league,
+        "current_enemy_team": [player.to_dict() for player in game.current_enemy_team] if game.current_enemy_team else None,
         "coins": game.coins,
         "gems": game.gems,
 
@@ -52,6 +55,8 @@ def load_game(game, path):
             data = json.load(f)
 
         game.level = data.get("level", 1)
+        game.battle_level = data.get("battle_level", 1)
+        game.current_enemy_league = data.get("current_enemy_league",None)
         game.coins = data.get("coins", 1000)
         game.gems = data.get("gems", 100)
 
@@ -72,13 +77,46 @@ def load_game(game, path):
                 p.get("block_level", 0),
                 p.get("receive_level", 0),
                 p.get("setting_level", 0),
-                p.get("serve_level", 0)
+                p.get("serve_level", 0),
+                p.get("prestige_level", 0)
             )
 
             for p in data.get("roster", [])
         ]
 
         game.lineup = {}
+
+        enemy_data = data.get(
+            "current_enemy_team"
+        )
+
+        game.current_enemy_team = None
+
+        if enemy_data:
+
+            game.current_enemy_team = [
+
+                Player(
+                    p["name"],
+                    p["position"],
+                    p["rarity"],
+                    p["attack"],
+                    p["block"],
+                    p["receive"],
+                    p["setting"],
+                    p["serve"],
+                    p.get("level", 1),
+
+                    p.get("attack_level", 0),
+                    p.get("block_level", 0),
+                    p.get("receive_level", 0),
+                    p.get("setting_level", 0),
+                    p.get("serve_level", 0)
+                )
+
+                for p in enemy_data
+
+            ]
 
         for slot, index in data.get(
             "lineup",
@@ -100,3 +138,4 @@ def load_game(game, path):
     except Exception as e:
 
         print("Load failed:", e)
+

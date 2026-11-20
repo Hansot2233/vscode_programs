@@ -58,11 +58,20 @@ class PlayerUpgradeScreen(QWidget):
             self.upgrade_serve
         )
 
+        self.prestige_btn = QPushButton(
+            "Prestige Player"
+        )
+
+        self.prestige_btn.clicked.connect(
+            self.prestige_player
+        )
+
         self.layout.addWidget(self.attack_btn)
         self.layout.addWidget(self.block_btn)
         self.layout.addWidget(self.receive_btn)
         self.layout.addWidget(self.setting_btn)
         self.layout.addWidget(self.serve_btn)
+        self.layout.addWidget(self.prestige_btn)
 
         self.setLayout(self.layout)
 
@@ -94,6 +103,10 @@ class PlayerUpgradeScreen(QWidget):
             f"Serve Lv {self.player.serve_level}/{MAX_STAT_LEVEL} "
             f"| {self.player.serve}\n\n"
 
+            f"Prestige: {self.player.prestige_level}\n"
+            f"Permanent Bonus: "
+            f"{self.player.prestige_level * 10}%\n\n"
+
             f"STR: {self.player.strength}\n"
             f"Coins: {self.game.coins}"
         )
@@ -117,6 +130,8 @@ class PlayerUpgradeScreen(QWidget):
         self.serve_btn.setText(
             f"Serve +{self.get_stat_gain('serve')} ({self.get_upgrade_cost(self.player.serve_level):,} Coins)"
         )
+
+
 
         self.attack_btn.setEnabled(
             self.player.attack_level < 200
@@ -269,3 +284,81 @@ class PlayerUpgradeScreen(QWidget):
         }
 
         return gains[position][stat_name]
+
+    def get_duplicates(self):
+
+        return [
+
+            p
+
+            for p in self.game.roster
+
+            if (
+                p is not self.player
+                and
+                p.name == self.player.name
+            )
+
+        ]
+
+    def prestige_player(self):
+
+        duplicates = self.get_duplicates()
+
+        if not duplicates:
+
+            QMessageBox.information(
+                self,
+                "No Duplicate",
+                "You need a duplicate "
+                "copy of this player."
+            )
+
+            return
+
+        duplicate = duplicates[0]
+
+        self.game.roster.remove(duplicate)
+
+        self.player.prestige_level += 1
+
+        self.player.attack_level //= 2
+        self.player.block_level //= 2
+        self.player.receive_level //= 2
+        self.player.setting_level //= 2
+        self.player.serve_level //= 2
+
+        self.player.attack = max(
+            1,
+            self.player.attack // 2
+        )
+
+        self.player.block = max(
+            1,
+            self.player.block // 2
+        )
+
+        self.player.receive = max(
+            1,
+            self.player.receive // 2
+        )
+
+        self.player.setting = max(
+            1,
+            self.player.setting // 2
+        )
+
+        self.player.serve = max(
+            1,
+            self.player.serve // 2
+        )
+
+        QMessageBox.information(
+            self,
+            "Prestige Success",
+            f"{self.player.name}\n"
+            f"Prestige "
+            f"{self.player.prestige_level}"
+        )
+
+        self.refresh()
