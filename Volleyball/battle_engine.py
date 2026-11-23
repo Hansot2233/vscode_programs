@@ -76,11 +76,11 @@ def rally_power(players):
             player.position
         ]
 
-        attack += player.attack * weight
-        block += player.block * weight
-        receive += player.receive * weight
-        setting += player.setting * weight
-        serve += player.serve * weight
+        attack += player.effective_attack * weight
+        block += player.effective_block * weight
+        receive += player.effective_receive * weight
+        setting += player.effective_setting * weight
+        serve += player.effective_serve * weight
 
         total_weight += weight
 
@@ -206,7 +206,10 @@ def simulate(player_lineup,game):
     )
 
 
-def get_player_for_position(position, rarity):
+def get_player_for_position(position,rarity,used_names=None):
+
+    if used_names is None:
+        used_names = set()
 
     for tier in RARITY_FALLBACKS[rarity]:
 
@@ -216,13 +219,19 @@ def get_player_for_position(position, rarity):
 
             for p in PLAYER_DATABASE[tier]
 
-            if p["position"] == position
+            if (
+                p["position"] == position
+                and
+                p["name"] not in used_names
+            )
 
         ]
 
         if candidates:
 
-            player_data = random.choice(candidates)
+            player_data = random.choice(
+                candidates
+            )
 
             return build_player(
                 player_data,
@@ -375,9 +384,7 @@ def get_enemy_team(level):
 
     )
 
-    #
-    # BUILD LINEUP
-    #
+    used_names = set()
 
     for index, position in enumerate(
         required_positions
@@ -394,54 +401,32 @@ def get_enemy_team(level):
 
             rarity_used = fallback_rarity
 
-        enemy_players[index] = (
-            get_player_for_position(
-                position,
-                rarity_used
-            )
+        player = get_player_for_position(
+            position,
+            rarity_used,
+            used_names
         )
 
-    if level <= 5:
+        enemy_players[index] = player
+
+        if player is not None:
+
+            used_names.add(
+                player.name
+            )
+
+    if level <= 65:
+
         multiplier = 1.00 + ((level - 1) * 0.03)
 
-    elif level <= 10:
-        multiplier = 1.00 + ((level - 6) * 0.03)
-
-    elif level <= 15:
-        multiplier = 1.00 + ((level - 11) * 0.03)
-
-    elif level <= 20:
-        multiplier = 1.00 + ((level - 16) * 0.03)
-
-    elif level <= 25:
-        multiplier = 1.00 + ((level - 21) * 0.03)
-
-    elif level <= 30:
-        multiplier = 1.00 + ((level - 26) * 0.03)
-
-    elif level <= 35:
-        multiplier = 1.00 + ((level - 31) * 0.03)
-
-    elif level <= 40:
-        multiplier = 1.00 + ((level - 36) * 0.03)
-
-    elif level <= 45:
-        multiplier = 1.00 + ((level - 41) * 0.03)
-
-    elif level <= 50:
-        multiplier = 1.00 + ((level - 46) * 0.03)
-
-    elif level <= 55:
-        multiplier = 1.00 + ((level - 51) * 0.03)
-
-    elif level <= 60:
-        multiplier = 1.00 + ((level - 56) * 0.03)
-
-    elif level <= 65:
-        multiplier = 1.00 + ((level - 61) * 0.03)
-
     else:
-        multiplier = 1.15 + ((level - 65) * 0.02)
+
+        # Continue increasing by 2% per stage after Stage 65
+        multiplier = (
+            1.00
+            + (64 * 0.03)
+            + ((level - 65) * 0.02)
+    )
 
     enemy_players = apply_multiplier(
         enemy_players,
@@ -486,3 +471,31 @@ def apply_multiplier(players, multiplier):
         )
 
     return players
+
+def simulate_match(team1,team2):
+
+    player_sets = 0
+    enemy_sets = 0
+
+    set_scores = []
+
+    while (player_sets < 3 and enemy_sets < 3):
+
+        p,e = play_set(
+            team1,
+            team2
+        )
+
+        set_scores.append(
+            f"({p}-{e})"
+        )
+
+        if p > e:
+            player_sets += 1
+        else:
+            enemy_sets += 1
+
+    return (
+        player_sets > enemy_sets,
+        set_scores
+    )

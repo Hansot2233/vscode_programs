@@ -3,7 +3,8 @@ from PyQt6.QtWidgets import (
     QLabel,
     QPushButton,
     QVBoxLayout,
-    QMessageBox
+    QMessageBox,
+    QHBoxLayout
 )
 
 MAX_STAT_LEVEL = 200
@@ -58,6 +59,31 @@ class PlayerUpgradeScreen(QWidget):
             self.upgrade_serve
         )
 
+        self.attack_10_btn = QPushButton("Attack +10")
+        self.attack_10_btn.clicked.connect(
+            lambda: self.upgrade_many("attack")
+        )
+
+        self.block_10_btn = QPushButton("Block +10")
+        self.block_10_btn.clicked.connect(
+            lambda: self.upgrade_many("block")
+        )
+
+        self.receive_10_btn = QPushButton("Receive +10")
+        self.receive_10_btn.clicked.connect(
+            lambda: self.upgrade_many("receive")
+        )
+
+        self.setting_10_btn = QPushButton("Setting +10")
+        self.setting_10_btn.clicked.connect(
+            lambda: self.upgrade_many("setting")
+        )
+
+        self.serve_10_btn = QPushButton("Serve +10")
+        self.serve_10_btn.clicked.connect(
+            lambda: self.upgrade_many("serve")
+        )
+
         self.prestige_btn = QPushButton(
             "Prestige Player"
         )
@@ -66,12 +92,47 @@ class PlayerUpgradeScreen(QWidget):
             self.prestige_player
         )
 
-        self.layout.addWidget(self.attack_btn)
-        self.layout.addWidget(self.block_btn)
-        self.layout.addWidget(self.receive_btn)
-        self.layout.addWidget(self.setting_btn)
-        self.layout.addWidget(self.serve_btn)
+        self.refund_btn = QPushButton(
+            "Refund Upgrades"
+        )
+
+        self.refund_btn.clicked.connect(
+            self.refund_player
+        )
+
+        # Attack row
+        attack_row = QHBoxLayout()
+        attack_row.addWidget(self.attack_btn)
+        attack_row.addWidget(self.attack_10_btn)
+        self.layout.addLayout(attack_row)
+
+        # Block row
+        block_row = QHBoxLayout()
+        block_row.addWidget(self.block_btn)
+        block_row.addWidget(self.block_10_btn)
+        self.layout.addLayout(block_row)
+
+        # Receive row
+        receive_row = QHBoxLayout()
+        receive_row.addWidget(self.receive_btn)
+        receive_row.addWidget(self.receive_10_btn)
+        self.layout.addLayout(receive_row)
+
+        # Setting row
+        setting_row = QHBoxLayout()
+        setting_row.addWidget(self.setting_btn)
+        setting_row.addWidget(self.setting_10_btn)
+        self.layout.addLayout(setting_row)
+
+        # Serve row
+        serve_row = QHBoxLayout()
+        serve_row.addWidget(self.serve_btn)
+        serve_row.addWidget(self.serve_10_btn)
+        self.layout.addLayout(serve_row)
+
+        # Other buttons
         self.layout.addWidget(self.prestige_btn)
+        self.layout.addWidget(self.refund_btn)
 
         self.setLayout(self.layout)
 
@@ -89,19 +150,19 @@ class PlayerUpgradeScreen(QWidget):
             f"{self.player.name}\n\n"
 
             f"Attack Lv {self.player.attack_level}/{MAX_STAT_LEVEL} "
-            f"| {self.player.attack}\n"
+            f"| {self.player.effective_attack}\n"
 
             f"Block Lv {self.player.block_level}/{MAX_STAT_LEVEL} "
-            f"| {self.player.block}\n"
+            f"| {self.player.effective_block}\n"
 
             f"Receive Lv {self.player.receive_level}/{MAX_STAT_LEVEL} "
-            f"| {self.player.receive}\n"
+            f"| {self.player.effective_receive}\n"
 
             f"Setting Lv {self.player.setting_level}/{MAX_STAT_LEVEL} "
-            f"| {self.player.setting}\n"
+            f"| {self.player.effective_setting}\n"
 
             f"Serve Lv {self.player.serve_level}/{MAX_STAT_LEVEL} "
-            f"| {self.player.serve}\n\n"
+            f"| {self.player.effective_serve}\n\n"
 
             f"Prestige: {self.player.prestige_level}\n"
             f"Permanent Bonus: "
@@ -112,26 +173,56 @@ class PlayerUpgradeScreen(QWidget):
         )
 
         self.attack_btn.setText(
-            f"Attack +{self.get_stat_gain('attack')} ({self.get_upgrade_cost(self.player.attack_level):,} Coins)"
+            f"Attack Lv +1 ({self.get_upgrade_cost(self.player.attack_level):,} Coins)"
         )
 
         self.block_btn.setText(
-            f"Block +{self.get_stat_gain('block')} ({self.get_upgrade_cost(self.player.block_level):,} Coins)"
+            f"Block Lv +1 ({self.get_upgrade_cost(self.player.block_level):,} Coins)"
         )
 
         self.receive_btn.setText(
-            f"Receive +{self.get_stat_gain('receive')} ({self.get_upgrade_cost(self.player.receive_level):,} Coins)"
+            f"Receive Lv +1 ({self.get_upgrade_cost(self.player.receive_level):,} Coins)"
         )
 
         self.setting_btn.setText(
-            f"Setting +{self.get_stat_gain('setting')} ({self.get_upgrade_cost(self.player.setting_level):,} Coins)"
+            f"Setting Lv +1 ({self.get_upgrade_cost(self.player.setting_level):,} Coins)"
         )
 
         self.serve_btn.setText(
-            f"Serve +{self.get_stat_gain('serve')} ({self.get_upgrade_cost(self.player.serve_level):,} Coins)"
+            f"Serve Lv +1 ({self.get_upgrade_cost(self.player.serve_level):,} Coins)"
         )
 
+        for stat_name, button in [
+            ("attack", self.attack_10_btn),
+            ("block", self.block_10_btn),
+            ("receive", self.receive_10_btn),
+            ("setting", self.setting_10_btn),
+            ("serve", self.serve_10_btn)
+        ]:
 
+            level = getattr(
+                self.player,
+                f"{stat_name}_level"
+            )
+
+            upgrades = min(
+                10,
+                MAX_STAT_LEVEL - level
+            )
+
+            total_cost = sum(
+                self.get_upgrade_cost(level + i)
+                for i in range(upgrades)
+            )
+
+            button.setText(
+                f"{stat_name.capitalize()} +{upgrades} "
+                f"({total_cost:,} Coins)"
+            )
+
+            button.setEnabled(
+                upgrades > 0
+            )
 
         self.attack_btn.setEnabled(
             self.player.attack_level < 200
@@ -177,6 +268,8 @@ class PlayerUpgradeScreen(QWidget):
         cost = self.get_upgrade_cost(self.player.attack_level)
 
         if self.spend(cost):
+
+            self.player.coins_spent += cost
             self.player.attack += self.get_stat_gain("attack")
             self.player.attack_level += 1
 
@@ -189,6 +282,7 @@ class PlayerUpgradeScreen(QWidget):
         cost = self.get_upgrade_cost(self.player.block_level)
         
         if self.spend(cost):
+            self.player.coins_spent += cost
             self.player.block += self.get_stat_gain("block")
             self.player.block_level += 1
 
@@ -201,6 +295,7 @@ class PlayerUpgradeScreen(QWidget):
         cost = self.get_upgrade_cost(self.player.receive_level)
 
         if self.spend(cost):
+            self.player.coins_spent += cost
             self.player.receive += self.get_stat_gain("receive")
             self.player.receive_level += 1
 
@@ -213,6 +308,7 @@ class PlayerUpgradeScreen(QWidget):
         cost = self.get_upgrade_cost(self.player.setting_level)
 
         if self.spend(cost):
+            self.player.coins_spent += cost
             self.player.setting += self.get_stat_gain("setting")
             self.player.setting_level += 1
 
@@ -225,10 +321,65 @@ class PlayerUpgradeScreen(QWidget):
         cost = self.get_upgrade_cost(self.player.serve_level)
 
         if self.spend(cost):
+            self.player.coins_spent += cost
             self.player.serve += self.get_stat_gain("serve")
             self.player.serve_level += 1
 
         self.refresh()
+
+    def upgrade_many(self, stat_name):
+
+        if not self.player:
+            return
+
+        level_attr = f"{stat_name}_level"
+        stat_level = getattr(self.player, level_attr)
+
+        # Respect maximum upgrade level
+        upgrades = min(
+            10,
+            MAX_STAT_LEVEL - stat_level
+        )
+
+        if upgrades <= 0:
+            return
+
+        # Calculate the exact cost of each upgrade
+        total_cost = sum(
+            self.get_upgrade_cost(stat_level + i)
+            for i in range(upgrades)
+        )
+
+        if not self.spend(total_cost):
+            return
+
+        # Apply the normal position-specific upgrade
+        for _ in range(upgrades):
+
+            gain = self.get_stat_gain(stat_name)
+
+            current_stat = getattr(
+                self.player,
+                stat_name
+            )
+
+            setattr(
+                self.player,
+                stat_name,
+                current_stat + gain
+            )
+
+            setattr(
+                self.player,
+                level_attr,
+                getattr(self.player, level_attr) + 1
+            )
+
+        # Track spending for refunds
+        self.player.coins_spent += total_cost
+
+        self.refresh()
+
 
     def get_upgrade_cost(self, level):
 
@@ -322,35 +473,24 @@ class PlayerUpgradeScreen(QWidget):
 
         self.player.prestige_level += 1
 
-        self.player.attack_level //= 2
-        self.player.block_level //= 2
-        self.player.receive_level //= 2
-        self.player.setting_level //= 2
-        self.player.serve_level //= 2
-
-        self.player.attack = max(
-            1,
-            self.player.attack // 2
+        self.reduce_stat_upgrade(
+            "attack"
         )
 
-        self.player.block = max(
-            1,
-            self.player.block // 2
+        self.reduce_stat_upgrade(
+            "block"
         )
 
-        self.player.receive = max(
-            1,
-            self.player.receive // 2
+        self.reduce_stat_upgrade(
+            "receive"
         )
 
-        self.player.setting = max(
-            1,
-            self.player.setting // 2
+        self.reduce_stat_upgrade(
+            "setting"
         )
 
-        self.player.serve = max(
-            1,
-            self.player.serve // 2
+        self.reduce_stat_upgrade(
+            "serve"
         )
 
         QMessageBox.information(
@@ -360,5 +500,128 @@ class PlayerUpgradeScreen(QWidget):
             f"Prestige "
             f"{self.player.prestige_level}"
         )
+
+        self.refresh()
+
+    def reduce_stat_upgrade(self, stat_name):
+
+        level_attr = f"{stat_name}_level"
+
+        current_level = getattr(
+            self.player,
+            level_attr
+        )
+
+        new_level = current_level // 2
+
+        levels_removed = (
+            current_level -
+            new_level
+        )
+
+        gain_per_level = (
+            self.get_stat_gain(
+                stat_name
+            )
+        )
+
+        current_stat = getattr(
+            self.player,
+            stat_name
+        )
+
+        setattr(
+            self.player,
+            stat_name,
+            current_stat -
+            (
+                levels_removed *
+                gain_per_level
+            )
+        )
+
+        setattr(
+            self.player,
+            level_attr,
+            new_level
+        )
+
+    def refund_player(self):
+
+        if (
+
+            self.player.attack_level == 0
+            and
+            self.player.block_level == 0
+            and
+            self.player.receive_level == 0
+            and
+            self.player.setting_level == 0
+            and
+            self.player.serve_level == 0
+
+        ):
+            return
+
+        refund = self.player.coins_spent
+
+        result = QMessageBox.question(
+            self,
+            "Refund Upgrades",
+            f"Refund all upgrades for\n"
+            f"{refund:,} coins?"
+        )
+
+        if (
+            result
+            !=
+            QMessageBox.StandardButton.Yes
+        ):
+            return
+
+        for stat_name in [
+            "attack",
+            "block",
+            "receive",
+            "setting",
+            "serve"
+        ]:
+
+            level_attr = (
+                f"{stat_name}_level"
+            )
+
+            level = getattr(
+                self.player,
+                level_attr
+            )
+
+            gain = self.get_stat_gain(
+                stat_name
+            )
+
+            current_value = getattr(
+                self.player,
+                stat_name
+            )
+
+            setattr(
+                self.player,
+                stat_name,
+                current_value -
+                (
+                    level * gain
+                )
+            )
+
+            setattr(
+                self.player,
+                level_attr,
+                0
+            )
+
+        self.game.coins += refund
+
+        self.player.coins_spent = 0
 
         self.refresh()

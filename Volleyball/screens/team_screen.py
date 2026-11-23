@@ -83,10 +83,15 @@ class TeamScreen(QWidget):
             if p is not None
         ]
 
-        # Players not currently in lineup
+        lineup_ids = {
+            id(player)
+            for player in lineup_players
+        }
+
         bench_players = [
-            p for p in self.game.roster
-            if p not in lineup_players
+            p
+            for p in self.game.roster
+            if id(p) not in lineup_ids
         ]
 
         rarity_order = {
@@ -216,19 +221,28 @@ class TeamScreen(QWidget):
 
             return
 
-        old_player = self.game.lineup[
+        destination_player = self.game.lineup[
             self.selected_slot
         ]
 
-        # Remove selected player from any current lineup spot
+        current_slot = None
+
+        # Is selected player already in lineup?
         for slot, player in self.game.lineup.items():
 
-            if player == self.selected_player:
+            if player is self.selected_player:
 
-                self.game.lineup[slot] = old_player
-
+                current_slot = slot
                 break
 
+        # Starter -> Starter swap
+        if current_slot is not None:
+
+            self.game.lineup[current_slot] = (
+                destination_player
+            )
+
+        # Put selected player in destination
         self.game.lineup[
             self.selected_slot
         ] = self.selected_player

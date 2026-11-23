@@ -1,11 +1,16 @@
+
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
     QListWidget,
+    QListWidgetItem,
     QPushButton
 )
+
+from PyQt6.QtGui import QColor
+
 
 class BattleScreen(QWidget):
 
@@ -63,6 +68,14 @@ class BattleScreen(QWidget):
         self.user_team.clear()
         self.enemy_team.clear()
 
+        rarity_colors = {
+            "Starter": QColor(150, 150, 150),
+            "Common": QColor(0, 200, 0),
+            "Rare": QColor(0, 100, 255),
+            "Epic": QColor(170, 0, 255),
+            "Legendary": QColor(255, 140, 0)
+        }
+
         enemy_players, league = (
             self.game.get_current_enemy()
         )
@@ -70,7 +83,7 @@ class BattleScreen(QWidget):
         self.enemy_players = enemy_players
 
         self.title.setText(
-            f"Opponent: {league}"
+            f"Stage: {self.game.battle_level}"
         )
 
         player_total = 0
@@ -81,11 +94,20 @@ class BattleScreen(QWidget):
 
             if player:
 
-                self.user_team.addItem(
+                item = QListWidgetItem(
                     f"{slot} | "
                     f"{player.name} | "
                     f"{player.strength}"
                 )
+
+                item.setForeground(
+                    rarity_colors.get(
+                        player.rarity,
+                        QColor("black")
+                    )
+                )
+
+                self.user_team.addItem(item)
 
                 player_total += (
                     player.strength
@@ -108,11 +130,20 @@ class BattleScreen(QWidget):
             enemy_players
         ):
 
-            self.enemy_team.addItem(
+            item = QListWidgetItem(
                 f"{slot} | "
                 f"{player.name} | "
                 f"{player.strength}"
             )
+
+            item.setForeground(
+                rarity_colors.get(
+                    player.rarity,
+                    QColor("black")
+                )
+            )
+
+            self.enemy_team.addItem(item)
 
             enemy_total += (
                 player.strength

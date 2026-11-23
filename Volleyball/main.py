@@ -1,15 +1,18 @@
+from calendar import week
 import sys, os
 from PyQt6.QtWidgets import *
 from game_data import GameData
 from battle_engine import simulate
 from save_manager import save_game,load_game
 from screens.team_screen import TeamScreen
-from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QColor
+from PyQt6.QtCore import Qt
 from screens.team_screen import TeamScreen
 from screens.player_upgrade_screen import PlayerUpgradeScreen
 from screens.gacha_screen import GachaScreen
 from screens.battle_screen import BattleScreen
+from screens.league_screen import LeagueScreen
+from league_engine import create_league, simulate_other_matches, get_current_match
 
 SAVE_FILE = os.path.join(
     os.path.dirname(__file__),
@@ -45,6 +48,7 @@ class Main(QMainWindow):
     for t, f in [
         ('Recruit Players', self.show_gacha_screen),
         ('Battle', self.show_battle_screen),
+        ('League', self.show_league_screen),
         ('Save', self.save)
     ]:
         b = QPushButton(t)
@@ -68,11 +72,12 @@ class Main(QMainWindow):
     self.team_screen = TeamScreen(self.g)
     self.gacha_screen = GachaScreen(self.g)
     self.battle_screen = BattleScreen(self.g)
-    
+    self.league_screen = LeagueScreen(self.g)
 
     self.upgrade_screen = PlayerUpgradeScreen(self.g)
     self.team_screen.open_upgrade_requested.connect(self.show_upgrade_screen)
     self.battle_screen.start_button.clicked.connect(self.battle)
+    self.league_screen.play_button.clicked.connect(self.league_battle)
 
     back_button = QPushButton("Back")
     back_button.clicked.connect(self.show_home_screen)
@@ -80,16 +85,20 @@ class Main(QMainWindow):
     back_to_home.clicked.connect(self.show_home_screen)
     battle_back = QPushButton("Back")
     battle_back.clicked.connect(self.show_home_screen)
+    league_back = QPushButton("Back")
+    league_back.clicked.connect(self.show_home_screen)
 
     self.battle_screen.layout.addWidget(battle_back)
     self.gacha_screen.layout().addWidget(back_to_home)
-    self.team_screen.layout().addWidget(back_button)    
+    self.team_screen.layout().addWidget(back_button)
+    self.league_screen.layout().addWidget(league_back)    
 
     self.stack.addWidget(self.home_widget)
     self.stack.addWidget(self.team_screen)
     self.stack.addWidget(self.upgrade_screen)
     self.stack.addWidget(self.gacha_screen)
     self.stack.addWidget(self.battle_screen)
+    self.stack.addWidget(self.league_screen)
 
     back_to_team = QPushButton("Back")
     back_to_team.clicked.connect(self.show_team_screen)
@@ -103,6 +112,7 @@ class Main(QMainWindow):
 
     self.info.setText(
         f"Lv {self.g.level} | "
+        f"Stage {self.g.battle_level} | "
         f"Coins {self.g.coins} | "
         f"Gems {self.g.gems} | "
         f"Team Rating {self.g.team_rating()}"
@@ -179,9 +189,11 @@ class Main(QMainWindow):
 
         return
 
+    stage = self.g.battle_level
+
     winner, set_scores, enemy = simulate(
-      self.g.lineup,
-      self.g
+        self.g.lineup,
+        self.g
     )
 
 
@@ -193,24 +205,17 @@ class Main(QMainWindow):
         self.g.current_enemy_team = None
         self.g.current_enemy_league = None
 
-        reward = (
-            500 +
-            self.g.battle_level * 100
-        )
+        reward = int((5001 ** (self.g.battle_level / 100)) * 0.15) + 100
 
-        gems = (
-            10 +
-            self.g.level // 5
-        )
+        gems = max(1,int(1 + (self.g.battle_level ** 2) / 550))
 
         self.g.coins += reward
         self.g.gems += gems
 
     result_text = (
-      f"{'WIN' if winner else 'LOSS'}\n\n"
-      f"Opponent:\n"
-      f"{enemy}\n\n"
-      f"Set Scores:\n"
+        f"{'WIN' if winner else 'LOSS'}\n\n"
+        f"Stage: {stage}\n\n"
+        f"Set Scores:\n"
     )
 
     for score in set_scores:
@@ -223,15 +228,298 @@ class Main(QMainWindow):
           f"Gems: {gems}"
         )
 
-    QMessageBox.information(
-        self,
-        "Match Result",
-        result_text
+        # Create custom match result popup
+    popup = QDialog(self)
+    popup.setWindowTitle("Match Result")
+
+    # Get screen dimensions
+    screen_geometry = self.screen().availableGeometry()
+
+    # Set popup to 33% of screen width and height
+    popup_width = int(screen_geometry.width() * 0.33)
+    popup_height = int(screen_geometry.height() * 0.33)
+
+    popup.setFixedSize(popup_width, popup_height)
+
+    # Center popup on screen
+    popup.move(
+        screen_geometry.center().x() - popup_width // 2,
+        screen_geometry.center().y() - popup_height // 2
     )
+
+    # Create layout
+    layout = QVBoxLayout(popup)
+
+    # Result text
+    result_label = QLabel(result_text)
+    result_label.setAlignment(Qt.AlignmentFlag.AlignTop)
+    result_label.setWordWrap(True)
+    result_label.setStyleSheet("font-size: 16px;")
+
+    layout.addWidget(result_label, 1)
+
+    # OK button
+    ok_button = QPushButton("OK")
+    ok_button.clicked.connect(popup.accept)
+
+    layout.addWidget(ok_button)
+
+    popup.exec()
 
     self.battle_screen.refresh()
     self.refresh()
-    
+
+  def league_battle(self):
+
+    your_team = next(
+
+        t
+
+        for t in self.g.league_teams
+
+        if t["name"] == "Your Team"
+
+    )
+
+    your_team["lineup"] = [
+
+        p
+
+        for p in self.g.lineup.values()
+
+        if p is not None
+
+    ]
+
+    opponent_name = (
+        get_current_match(
+            self.g
+        )
+    )
+
+    if opponent_name is None:
+
+        QMessageBox.information(
+            self,
+            "Season Complete",
+            "Start a new season."
+        )
+
+        return
+
+    team = next(
+
+        t
+
+        for t in self.g.league_teams
+
+        if t["name"] == opponent_name
+
+    )
+
+    from battle_engine import (
+        simulate_match
+    )
+
+    winner, scores = simulate_match(
+
+        [
+
+            p
+
+            for p in self.g.lineup.values()
+
+            if p is not None
+
+        ],
+
+        team["lineup"]
+
+    )
+
+    if winner:
+
+        self.g.coins += 50
+
+        your_team["wins"] += 1
+        team["losses"] += 1
+
+        reward_text = (
+            "\n\nReward:\n"
+            "50 Coins"
+        )
+
+    else:
+
+        your_team["losses"] += 1
+        team["wins"] += 1
+
+        reward_text = ""
+
+    your_team["played"] += 1
+    team["played"] += 1
+
+    week = self.g.league_schedule[
+    self.g.league_week
+    ]
+
+    for team_a_name, team_b_name in week:
+
+      if "Your Team" in [
+          team_a_name,
+          team_b_name
+      ]:
+          continue
+
+      team_a = next(
+
+          t
+
+          for t in self.g.league_teams
+
+          if t["name"] == team_a_name
+
+      )
+
+      team_b = next(
+
+          t
+
+          for t in self.g.league_teams
+
+          if t["name"] == team_b_name
+
+      )
+
+      ai_winner, _ = simulate_match(
+
+          team_a["lineup"],
+          team_b["lineup"]
+
+      )
+
+      if ai_winner:
+
+          team_a["wins"] += 1
+          team_b["losses"] += 1
+
+      else:
+
+          team_b["wins"] += 1
+          team_a["losses"] += 1
+
+      team_a["played"] += 1
+      team_b["played"] += 1
+
+    self.g.league_week += 1
+
+    result_text = (
+        f"{'WIN' if winner else 'LOSS'}\n\n"
+        f"Your Team vs "
+        f"{opponent_name}\n\n"
+        f"Sets:\n"
+    )
+
+    for score in scores:
+
+      if isinstance(
+          score,
+          tuple
+      ):
+
+          result_text += (
+              f"{score[0]}"
+              f"-"
+              f"{score[1]}\n"
+          )
+
+      else:
+
+          result_text += (
+              str(score)
+              +
+              "\n"
+          )
+
+    result_text += reward_text
+
+    QMessageBox.information(
+        self,
+        "League Match",
+        result_text
+    )
+
+    self.league_screen.refresh()
+    self.refresh()
+
+    if (self.g.league_week >= len(self.g.league_schedule)):
+
+      standings = sorted(
+
+          self.g.league_teams,
+
+          key=lambda t: (
+              t["wins"],
+              -t["losses"]
+          ),
+
+          reverse=True
+
+      )
+
+      placement = next(
+
+          (
+              i + 1
+
+              for i, team in enumerate(
+                  standings
+              )
+
+              if team["name"] == "Your Team"
+          ),
+
+          16
+
+      )
+
+      if placement == 1:
+
+          gems = 500
+
+      elif placement <= 4:
+
+          gems = 250
+
+      elif placement <= 8:
+
+          gems = 100
+
+      else:
+
+          gems = 50
+
+      self.g.gems += gems
+
+      QMessageBox.information(
+
+          self,
+
+          "Season Complete",
+
+          f"You finished "
+          f"#{placement}\n\n"
+          f"Reward:\n"
+          f"{gems} Gems"
+
+      )
+
+      create_league(
+          self.g
+      )
+
+      self.league_screen.refresh()
+      
   def save(self): 
     save_game(self.g,SAVE_FILE)
 
@@ -262,6 +550,50 @@ class Main(QMainWindow):
     self.stack.setCurrentWidget(
         self.battle_screen
     )
+
+  def show_league_screen(self):
+
+    if not self.g.league_teams:
+
+        create_league(
+            self.g
+        )
+
+    your_team = next(
+
+        (
+
+            t
+
+            for t in self.g.league_teams
+
+            if t["name"] == "Your Team"
+
+        ),
+
+        None
+
+    )
+
+    if your_team:
+
+        your_team["lineup"] = [
+
+            p
+
+            for p in self.g.lineup.values()
+
+            if p is not None
+
+        ]
+
+    self.league_screen.refresh()
+
+    self.stack.setCurrentWidget(
+        self.league_screen
+    )
+
+
 
 app=QApplication(sys.argv)
 m=Main()

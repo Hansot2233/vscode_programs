@@ -8,8 +8,8 @@ class GameData:
 
         self.level = 1
         self.battle_level = 1
-        self.coins = 1000
-        self.gems = 100
+        self.coins = 100
+        self.gems = 50
 
         # All owned players
         self.roster = []
@@ -42,6 +42,11 @@ class GameData:
 
         self.current_enemy_team = None
         self.current_enemy_league = None
+        self.league_teams = []
+        self.league_results = {}
+        self.league_completed_opponents = set()
+        self.league_schedule = []
+        self.league_week = 0
 
     def generate_player(self):
 
