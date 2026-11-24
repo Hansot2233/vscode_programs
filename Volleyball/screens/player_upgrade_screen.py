@@ -458,11 +458,9 @@ class PlayerUpgradeScreen(QWidget):
 
         if not duplicates:
 
-            QMessageBox.information(
-                self,
+            self.silent_message(
                 "No Duplicate",
-                "You need a duplicate "
-                "copy of this player."
+                "You need a duplicate copy of this player."
             )
 
             return
@@ -493,8 +491,7 @@ class PlayerUpgradeScreen(QWidget):
             "serve"
         )
 
-        QMessageBox.information(
-            self,
+        self.silent_message(
             "Prestige Success",
             f"{self.player.name}\n"
             f"Prestige "
@@ -625,3 +622,20 @@ class PlayerUpgradeScreen(QWidget):
         self.player.coins_spent = 0
 
         self.refresh()
+
+    def silent_message(
+        self,
+        title,
+        text
+    ):
+
+        msg = QMessageBox(self)
+
+        msg.setWindowTitle(title)
+        msg.setText(text)
+
+        msg.setIcon(
+            QMessageBox.Icon.NoIcon
+        )
+
+        msg.exec()

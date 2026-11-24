@@ -1,4 +1,3 @@
-from calendar import week
 import sys, os
 from PyQt6.QtWidgets import *
 from game_data import GameData
@@ -78,6 +77,7 @@ class Main(QMainWindow):
     self.team_screen.open_upgrade_requested.connect(self.show_upgrade_screen)
     self.battle_screen.start_button.clicked.connect(self.battle)
     self.league_screen.play_button.clicked.connect(self.league_battle)
+    self.league_screen.reset_button.clicked.connect(self.reset_league)
 
     back_button = QPushButton("Back")
     back_button.clicked.connect(self.show_home_screen)
@@ -316,7 +316,7 @@ class Main(QMainWindow):
 
             gems = max(
                 1,
-                int(1 + (self.g.battle_level ** 2) / 550)
+                int(1 + (self.g.battle_level ** 2) / 250)
             )
 
             self.g.coins += reward
@@ -352,7 +352,7 @@ class Main(QMainWindow):
         )
 
         popup_height = int(
-            screen_geometry.height() * 0.33
+            screen_geometry.height() * 0.4
         )
 
         popup.setFixedSize(
@@ -395,6 +395,45 @@ class Main(QMainWindow):
         self.refresh()
 
   def league_battle(self):
+
+    if self.g.playoff_active:
+
+      if (
+          not self.g.playoff_teams
+          or
+          not self.g.playoff_matchups
+      ):
+
+          msg = QMessageBox(self)
+
+          msg.setWindowTitle(
+              "Playoffs Reset"
+          )
+
+          msg.setText(
+              "Playoff data was incomplete.\n"
+              "A new league has been generated."
+          )
+
+          msg.setIcon(
+              QMessageBox.Icon.NoIcon
+          )
+
+          msg.exec()
+
+          self.g.playoff_active = False
+
+          create_league(
+              self.g
+          )
+
+          self.league_screen.refresh()
+
+          return
+
+      self.playoff_battle()
+
+      return
 
     your_team = next(
 
@@ -568,11 +607,21 @@ class Main(QMainWindow):
 
     result_text += reward_text
 
-    QMessageBox.information(
-        self,
-        "League Match",
+    msg = QMessageBox(self)
+
+    msg.setWindowTitle(
+        "League Match"
+    )
+
+    msg.setText(
         result_text
     )
+
+    msg.setIcon(
+        QMessageBox.Icon.NoIcon
+    )
+
+    msg.exec()
 
     self.league_screen.refresh()
     self.refresh()
@@ -626,27 +675,465 @@ class Main(QMainWindow):
 
       self.g.gems += gems
 
-      QMessageBox.information(
+      msg = QMessageBox(self)
 
-          self,
+      msg.setWindowTitle(
+          "Season Complete"
+      )
 
-          "Season Complete",
-
+      msg.setText(
           f"You finished "
           f"#{placement}\n\n"
           f"Reward:\n"
           f"{gems} Gems"
-
       )
+
+      msg.setIcon(
+          QMessageBox.Icon.NoIcon
+      )
+
+      msg.exec()
       
       if placement <= 4:
         self.g.league_top4_finishes += 1
 
-      self.g.league_number += 1
-      create_league(self.g)
+      self.start_playoffs()
       
       self.league_screen.refresh()
-      
+
+  def start_playoffs(self):
+
+    self.g.playoff_history = []
+    self.g.playoff_teams = []
+
+    standings = sorted(
+    
+      self.g.league_teams,
+    
+      key=lambda t: (
+          t["wins"],
+          -t["losses"]
+      ),
+      reverse=True
+    )
+
+    for seed, team in enumerate(
+        standings,
+        start=1
+    ):
+
+        team["seed"] = seed
+
+        self.g.playoff_teams.append(
+            team
+        )
+
+    self.g.playoff_teams = standings
+
+    self.g.playoff_matchups = []
+    
+    seed_map = {
+
+      team["seed"]: team
+
+      for team in self.g.playoff_teams
+
+    }
+
+    self.g.playoff_matchups = [
+
+        (
+            seed_map[1]["name"],
+            seed_map[16]["name"]
+        ),
+
+        (
+            seed_map[2]["name"],
+            seed_map[15]["name"]
+        ),
+
+        (
+            seed_map[3]["name"],
+            seed_map[14]["name"]
+        ),
+
+        (
+            seed_map[4]["name"],
+            seed_map[13]["name"]
+        ),
+
+        (
+            seed_map[5]["name"],
+            seed_map[12]["name"]
+        ),
+
+        (
+            seed_map[6]["name"],
+            seed_map[11]["name"]
+        ),
+
+        (
+            seed_map[7]["name"],
+            seed_map[10]["name"]
+        ),
+
+        (
+            seed_map[8]["name"],
+            seed_map[9]["name"]
+        )
+
+    ]  
+
+    self.g.playoff_active = True
+
+    self.g.playoff_round = 1
+
+    QMessageBox(
+        QMessageBox.Icon.NoIcon,
+        "Playoffs",
+        "Playoffs have begun!"
+    ).exec()
+
+  def get_playoff_opponent(self):
+
+    standings = self.g.playoff_teams
+
+    your_index = next(
+
+        i
+
+        for i, team in enumerate(
+            standings
+        )
+
+        if team["name"] == "Your Team"
+
+    )
+
+    opponent_index = (
+        len(standings)
+        - 1
+        - your_index
+    )
+
+    if opponent_index == your_index:
+
+        return None
+
+    return standings[
+        opponent_index
+    ]
+
+  def playoff_battle(self):
+
+    opponent = (
+        self.get_playoff_opponent()
+    )
+
+    from battle_engine import (
+        simulate_match
+    )
+
+    winner, scores = simulate_match(
+
+        [
+            p
+            for p in self.g.lineup.values()
+            if p is not None
+        ],
+
+        opponent["lineup"]
+
+    )
+
+    result_text = (
+      f"PLAYOFFS\n\n"
+      f"Round "
+      f"{self.g.playoff_round}\n\n"
+      f"Your Team vs "
+      f"{opponent['name']}\n\n"
+    )
+
+    for score in scores:
+
+      if isinstance(score, tuple):
+
+          result_text += (
+              f"{score[0]}-{score[1]}\n"
+          )
+
+      else:
+
+          result_text += (
+              str(score) + "\n"
+          )
+
+    if winner:
+
+      self.g.coins += 2500
+
+      result_text += (
+        "\nReward:\n"
+        "2500 Coins"
+      )
+
+      msg = QMessageBox(self)
+
+      msg.setWindowTitle(
+          "Playoff Victory"
+      )
+
+      msg.setText(
+          result_text
+      )
+
+      msg.setIcon(
+          QMessageBox.Icon.NoIcon
+      )
+
+      msg.exec()
+
+      self.g.playoff_teams.remove(
+          opponent
+      )
+
+      survivors = []
+
+      # Keep Your Team alive since it already won
+
+      your_team_entry = next(
+
+          team
+
+          for team in self.g.playoff_teams
+
+          if team["name"] == "Your Team"
+
+      )
+
+      survivors.append(
+          your_team_entry
+      )
+
+      # Remove Your Team from AI simulation
+
+      teams = [
+
+          team
+
+          for team in self.g.playoff_teams
+
+          if team["name"] != "Your Team"
+
+      ]
+
+      while len(teams) >= 2:
+
+          high = teams.pop(0)
+
+          low = teams.pop(-1)
+
+          ai_winner, _ = simulate_match(
+
+              high["lineup"],
+              low["lineup"]
+
+          )
+
+          survivors.append(
+
+              high
+
+              if ai_winner
+
+              else low
+
+          )
+
+      self.g.playoff_teams = survivors
+
+      self.g.playoff_history.append(
+
+        {
+            "round": self.g.playoff_round,
+            "teams": [
+
+                team["name"]
+
+                for team in survivors
+
+            ]
+          }
+      )
+
+      self.g.playoff_matchups = []
+      winners = [
+
+          team["name"]
+
+          for team in survivors
+
+      ]
+
+      if self.g.playoff_round == 1:
+
+        self.g.playoff_matchups = [
+
+            (
+                winners[0],
+                winners[7]
+            ),
+
+            (
+                winners[1],
+                winners[6]
+            ),
+
+            (
+                winners[2],
+                winners[5]
+            ),
+
+            (
+                winners[3],
+                winners[4]
+            )
+
+        ]
+
+      elif self.g.playoff_round == 2:
+
+        self.g.playoff_matchups = [
+
+            (
+                winners[0],
+                winners[3]
+            ),
+
+            (
+                winners[1],
+                winners[2]
+            )
+
+        ]
+
+      elif self.g.playoff_round == 3:
+
+        self.g.playoff_matchups = [
+
+            (
+                winners[0],
+                winners[1]
+            )
+
+        ]
+
+      self.g.playoff_round += 1
+
+      if (
+          self.g.playoff_round == 3
+          and
+          not getattr(
+              self.g,
+              "league_incremented",
+              False
+          )
+      ):
+
+          self.g.league_number += 1
+
+          self.g.league_incremented = True
+
+      if len(self.g.playoff_teams) == 1:
+         
+         champion = (self.g.playoff_teams[0])
+
+         if champion["name"] == "Your Team":
+            
+            self.g.coins += 10000
+
+            QMessageBox(
+                QMessageBox.Icon.NoIcon,
+                "Champion",
+                "You won the league!\n\n"
+                "Reward:\n"
+                "10,000 Coins"
+            ).exec()
+
+            self.g.playoff_active = False
+
+            create_league(self.g)
+
+    if not winner:
+
+        self.g.playoff_active = False
+
+        msg = QMessageBox(self)
+
+        msg.setWindowTitle(
+            "Playoffs Eliminated"
+        )
+
+        msg.setText(
+            result_text +
+            "\n\nYour playoff run has ended."
+        )
+
+        msg.setIcon(
+            QMessageBox.Icon.NoIcon
+        )
+
+        msg.exec()
+
+        create_league(
+            self.g
+        )
+
+        self.league_screen.refresh()
+
+        self.refresh()
+
+        self.stack.setCurrentWidget(
+            self.league_screen
+        )
+
+        return
+
+    self.league_screen.refresh()
+    self.refresh()
+
+  def reset_league(self):
+
+    reply = QMessageBox.question(
+
+        self,
+
+        "Reset League",
+
+        "Reset the current league and playoffs?\n\n"
+        "All standings and playoff progress will be lost.",
+
+        QMessageBox.StandardButton.Yes
+        |
+        QMessageBox.StandardButton.No
+
+    )
+
+    if (
+        reply
+        !=
+        QMessageBox.StandardButton.Yes
+    ):
+        return
+
+    create_league(
+        self.g
+    )
+
+    self.league_screen.refresh()
+
+    self.refresh()
+  
   def save(self):
     save_game(self.g, SAVE_FILE)
 
@@ -689,6 +1176,22 @@ class Main(QMainWindow):
         create_league(
             self.g
         )
+
+    if (
+      self.g.playoff_active
+      and
+      (
+          not self.g.playoff_teams
+          or
+          not self.g.playoff_matchups
+      )
+    ):
+
+      self.g.playoff_active = False
+
+      create_league(
+          self.g
+      )
 
     your_team = next(
 

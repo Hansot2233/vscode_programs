@@ -50,6 +50,12 @@ class GameData:
         self.league_top4_finishes = 0
         self.league_number = 1
 
+        self.playoff_active = False
+        self.playoff_teams = []
+        self.playoff_matchups = []
+        self.playoff_history = []
+        self.playoff_round = 0
+
     def generate_player(self):
 
         r = random.random()

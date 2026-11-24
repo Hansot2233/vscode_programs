@@ -63,6 +63,9 @@ def create_league(game):
 
     game.league_teams = []
     game.completed_league_matches = set()
+    game.playoff_history = []
+    game.playoff_matchups = []
+    game.league_incremented = False
 
     your_lineup = [
         p
