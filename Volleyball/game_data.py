@@ -47,6 +47,8 @@ class GameData:
         self.league_completed_opponents = set()
         self.league_schedule = []
         self.league_week = 0
+        self.league_top4_finishes = 0
+        self.league_number = 1
 
     def generate_player(self):
 

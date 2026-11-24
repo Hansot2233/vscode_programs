@@ -2,11 +2,11 @@ from calendar import week
 import sys, os
 from PyQt6.QtWidgets import *
 from game_data import GameData
-from battle_engine import simulate
+from battle_engine import simulate, get_enemy_team, play_rally
 from save_manager import save_game,load_game
 from screens.team_screen import TeamScreen
 from PyQt6.QtGui import QColor
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from screens.team_screen import TeamScreen
 from screens.player_upgrade_screen import PlayerUpgradeScreen
 from screens.gacha_screen import GachaScreen
@@ -107,6 +107,10 @@ class Main(QMainWindow):
     self.setCentralWidget(self.stack)
 
     self.refresh()
+    
+    self.autosave_timer = QTimer(self)
+    self.autosave_timer.timeout.connect(self.save)
+    self.autosave_timer.start(30000)
 
   def refresh(self):
 
@@ -189,85 +193,206 @@ class Main(QMainWindow):
 
         return
 
-    stage = self.g.battle_level
+    self.battle_screen.start_button.setEnabled(False)
 
-    winner, set_scores, enemy = simulate(
-        self.g.lineup,
-        self.g
+    self.stage = self.g.battle_level
+
+    self.player_team = [
+        p for p in self.g.lineup.values()
+        if p is not None
+    ]
+
+    self.enemy_team, self.enemy_league = (
+        self.g.get_current_enemy()
     )
 
+    self.player_sets = 0
+    self.enemy_sets = 0
 
-    if winner:
+    self.player_points = 0
+    self.enemy_points = 0
 
-        self.g.level += 1
-        self.g.battle_level += 1
+    self.set_scores = []
 
-        self.g.current_enemy_team = None
-        self.g.current_enemy_league = None
-
-        reward = int((5001 ** (self.g.battle_level / 100)) * 0.15) + 100
-
-        gems = max(1,int(1 + (self.g.battle_level ** 2) / 550))
-
-        self.g.coins += reward
-        self.g.gems += gems
-
-    result_text = (
-        f"{'WIN' if winner else 'LOSS'}\n\n"
-        f"Stage: {stage}\n\n"
-        f"Set Scores:\n"
+    self.battle_screen.score_label.setText(
+        "Set 1\n\n0 - 0\n\nSets: 0 - 0"
     )
 
-    for score in set_scores:
-        result_text += score + "\n"
+    self.play_next_rally()
 
-    if winner:
-        result_text += (
-          f"Rewards:\n"
-          f"Coins: {reward}\n"
-          f"Gems: {gems}"
+  def play_next_rally(self):
+
+    # Simulate one rally
+    if play_rally(
+        self.player_team,
+        self.enemy_team
+    ):
+
+        self.player_points += 1
+
+    else:
+
+        self.enemy_points += 1
+
+    # Update live scoreboard
+    self.battle_screen.score_label.setText(
+        f"Set {len(self.set_scores) + 1}\n\n"
+        f"{self.player_points} - {self.enemy_points}\n\n"
+        f"Sets: {self.player_sets} - {self.enemy_sets}\n\n"
+        f"Completed Sets: "
+        f"{' | '.join(self.set_scores)}"
+    )
+
+    # Check whether the set has ended
+    set_finished = (
+        (self.player_points >= 25 or
+         self.enemy_points >= 25)
+        and
+        abs(
+            self.player_points -
+            self.enemy_points
+        ) >= 2
+    )
+
+    if set_finished:
+
+        self.set_scores.append(
+            f"{self.player_points}-{self.enemy_points}"
         )
 
-        # Create custom match result popup
-    popup = QDialog(self)
-    popup.setWindowTitle("Match Result")
+        if self.player_points > self.enemy_points:
+            self.player_sets += 1
+        else:
+            self.enemy_sets += 1
 
-    # Get screen dimensions
-    screen_geometry = self.screen().availableGeometry()
+        self.battle_screen.score_label.setText(
+            f"Set {len(self.set_scores)} Complete!\n\n"
+            f"{self.player_points} - {self.enemy_points}\n\n"
+            f"Sets: {self.player_sets} - {self.enemy_sets}\n\n"
+            f"Completed Sets: "
+            f"{' | '.join(self.set_scores)}"
+        )
 
-    # Set popup to 33% of screen width and height
-    popup_width = int(screen_geometry.width() * 0.33)
-    popup_height = int(screen_geometry.height() * 0.33)
+        # Check whether the match has ended
+        if self.player_sets == 3 or self.enemy_sets == 3:
 
-    popup.setFixedSize(popup_width, popup_height)
+            QTimer.singleShot(
+                500,
+                self.finish_battle
+            )
 
-    # Center popup on screen
-    popup.move(
-        screen_geometry.center().x() - popup_width // 2,
-        screen_geometry.center().y() - popup_height // 2
+            return
+
+        # Prepare next set
+        self.player_points = 0
+        self.enemy_points = 0
+
+    # Wait 0.5 seconds before the next rally
+    QTimer.singleShot(
+        100,
+        self.play_next_rally
     )
 
-    # Create layout
-    layout = QVBoxLayout(popup)
+  def finish_battle(self):
 
-    # Result text
-    result_label = QLabel(result_text)
-    result_label.setAlignment(Qt.AlignmentFlag.AlignTop)
-    result_label.setWordWrap(True)
-    result_label.setStyleSheet("font-size: 16px;")
+        winner = self.player_sets > self.enemy_sets
 
-    layout.addWidget(result_label, 1)
+        stage = self.stage
 
-    # OK button
-    ok_button = QPushButton("OK")
-    ok_button.clicked.connect(popup.accept)
+        reward = 0
+        gems = 0
 
-    layout.addWidget(ok_button)
+        if winner:
 
-    popup.exec()
+            self.g.level += 1
+            self.g.battle_level += 1
 
-    self.battle_screen.refresh()
-    self.refresh()
+            self.g.current_enemy_team = None
+            self.g.current_enemy_league = None
+
+            reward = int(
+                (5001 ** (self.g.battle_level / 100)) * 0.15
+            ) + 1000
+
+            gems = max(
+                1,
+                int(1 + (self.g.battle_level ** 2) / 550)
+            )
+
+            self.g.coins += reward
+            self.g.gems += gems
+
+        result_text = (
+            f"{'WIN' if winner else 'LOSS'}\n\n"
+            f"Stage: {stage}\n\n"
+            f"Set Scores:\n"
+        )
+
+        for score in self.set_scores:
+            result_text += score + "\n"
+
+        if winner:
+
+            result_text += (
+                f"\nRewards:\n"
+                f"Coins: {reward}\n"
+                f"Gems: {gems}\n"
+                f""
+            )
+
+        # Result popup
+        popup = QDialog(self)
+
+        popup.setWindowTitle("Match Result")
+
+        screen_geometry = self.screen().availableGeometry()
+
+        popup_width = int(
+            screen_geometry.width() * 0.33
+        )
+
+        popup_height = int(
+            screen_geometry.height() * 0.33
+        )
+
+        popup.setFixedSize(
+            popup_width,
+            popup_height
+        )
+
+        popup.move(
+            screen_geometry.center().x() - popup_width // 2,
+            screen_geometry.center().y() - popup_height // 2
+        )
+
+        layout = QVBoxLayout(popup)
+
+        result_label = QLabel(result_text)
+
+        result_label.setAlignment(
+            Qt.AlignmentFlag.AlignTop
+        )
+
+        result_label.setWordWrap(True)
+
+        result_label.setStyleSheet(
+            "font-size: 16px;"
+        )
+
+        layout.addWidget(result_label, 1)
+
+        ok_button = QPushButton("OK")
+
+        ok_button.clicked.connect(popup.accept)
+
+        layout.addWidget(ok_button)
+
+        popup.exec()
+
+        self.battle_screen.start_button.setEnabled(True)
+
+        self.battle_screen.refresh()
+        self.refresh()
 
   def league_battle(self):
 
@@ -513,15 +638,21 @@ class Main(QMainWindow):
           f"{gems} Gems"
 
       )
+      
+      if placement <= 4:
+        self.g.league_top4_finishes += 1
 
-      create_league(
-          self.g
-      )
-
+      self.g.league_number += 1
+      create_league(self.g)
+      
       self.league_screen.refresh()
       
-  def save(self): 
-    save_game(self.g,SAVE_FILE)
+  def save(self):
+    save_game(self.g, SAVE_FILE)
+
+  def closeEvent(self, event):
+    self.save()     
+    event.accept()
 
   def show_team_screen(self):
     self.team_screen.refresh()

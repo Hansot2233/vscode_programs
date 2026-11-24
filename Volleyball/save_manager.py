@@ -61,6 +61,8 @@ def save_game(game, path):
         ],
         "league_week": game.league_week,
         "league_schedule": game.league_schedule,
+        "league_top4_finishes": game.league_top4_finishes,
+        "league_number": game.league_number,
     }
 
     with open(path, "w", encoding="utf-8") as f:
@@ -211,6 +213,16 @@ def load_game(game, path):
         game.league_schedule = data.get(
             "league_schedule",
             []
+        )
+        
+        game.league_top4_finishes = data.get(
+            "league_top4_finishes",
+            0
+        )
+        
+        game.league_number = data.get(
+            "league_number",
+            1
         )
 
         for slot, index in data.get(

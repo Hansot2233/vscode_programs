@@ -1,13 +1,6 @@
 
-from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QListWidget,
-    QListWidgetItem,
-    QPushButton
-)
+from PyQt6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QLabel,QListWidget,QListWidgetItem,QPushButton
+from PyQt6.QtCore import Qt
 
 from PyQt6.QtGui import QColor
 
@@ -23,6 +16,20 @@ class BattleScreen(QWidget):
         self.layout = QVBoxLayout()
 
         self.title = QLabel()
+        
+        self.score_label = QLabel("Ready to battle")
+
+        self.score_label.setAlignment(
+            Qt.AlignmentFlag.AlignCenter
+        )
+
+        self.score_label.setStyleSheet("""
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px;
+        """)
+
+        self.layout.addWidget(self.score_label)
 
         self.layout.addWidget(
             self.title
