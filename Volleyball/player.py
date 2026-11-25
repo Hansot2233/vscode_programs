@@ -42,13 +42,6 @@ class Player:
             self.prestige_level * 0.10
         )
 
-    def prestige_multiplier(self):
-
-        return (
-            1 +
-            self.prestige_level * 0.10
-        )
-
     @property
     def effective_attack(self):
 

@@ -250,11 +250,18 @@ class LeagueScreen(QWidget):
 
         for team in standings:
 
-            # Calculate average team strength
+            lineup = team["lineup"]
+
+            players = (
+                lineup.values()
+                if isinstance(lineup, dict)
+                else lineup
+            )
+
             strength = sum(
                 player.strength
-                for player in team["lineup"]
-            ) // max(len(team["lineup"]), 1)
+                for player in players
+            ) // max(len(lineup), 1)
 
             self.table.addItem(
 

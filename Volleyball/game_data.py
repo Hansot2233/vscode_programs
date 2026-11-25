@@ -10,6 +10,7 @@ class GameData:
         self.battle_level = 1
         self.coins = 100
         self.gems = 50
+        self.highest_team_rating = 15
 
         # All owned players
         self.roster = []
@@ -43,12 +44,31 @@ class GameData:
         self.current_enemy_team = None
         self.current_enemy_league = None
         self.league_teams = []
+
+        # Regular season progress
         self.league_results = {}
-        self.league_completed_opponents = set()
+        self.completed_league_matches = set()
         self.league_schedule = []
         self.league_week = 0
+
+        # Values used to regenerate the same opponents when loading a save
+        self.league_seed = None
+        self.league_generation_strength = None
+        self.league_minimum_percentage = 15
+
+        # Long-term league progression
         self.league_top4_finishes = 0
         self.league_number = 1
+
+        # Saved playoff progress
+        self.playoff_active = False
+        self.playoff_teams = []
+        self.playoff_matchups = []
+        self.playoff_history = []
+        self.playoff_round = 0
+
+        # Standings snapshot; contains numbers, not team objects
+        self.league_standings = {}
 
         self.playoff_active = False
         self.playoff_teams = []
@@ -61,6 +81,8 @@ class GameData:
         self.total_upgrades = 0
         self.league_seasons_completed = 0
         self.league_championships = 0
+        self.highest_player_level_ever = 0
+        self.total_prestiges = 0
         self.claimed_achievements = []
         self.claimed_milestones = []
 
@@ -151,4 +173,23 @@ class GameData:
         return (
             self.current_enemy_team,
             self.current_enemy_league
+        )
+    def update_highest_team_rating(self):
+
+        players = [
+            player
+            for player in self.lineup.values()
+            if player is not None
+        ]
+
+        if not players:
+            return
+
+        current_rating = sum(
+            player.strength for player in players
+        ) / len(players)
+
+        self.highest_team_rating = max(
+            self.highest_team_rating,
+            current_rating
         )

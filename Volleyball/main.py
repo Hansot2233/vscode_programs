@@ -14,12 +14,9 @@ from screens.league_screen import LeagueScreen
 from league_engine import create_league, simulate_other_matches, get_current_match
 from screens.achievement_screen import AchievementScreen
 from progression import MILESTONE_REWARDS
-
-SAVE_FILE = os.path.join(
-    os.path.dirname(__file__),
-    "saves",
-    "save.json"
-)
+from storage import save_user_game,load_user_game,get_save_path
+from account_manager import load_accounts
+from screens.profile_screen import ProfileScreen
 
 class Main(QMainWindow):
   def __init__(self):
@@ -28,9 +25,11 @@ class Main(QMainWindow):
     self.resize(1400, 800)
 
     self.g=GameData()
-    load_game(self.g, SAVE_FILE)
+    self.current_user = None
 
     self.stack = QStackedWidget()
+    self.profile_screen = ProfileScreen()
+    self.profile_screen.play_button.clicked.connect(self.select_profile)
 
     self.home_widget = QWidget()
 
@@ -103,6 +102,7 @@ class Main(QMainWindow):
     self.league_screen.layout().addWidget(league_back)  
     self.achievement_screen.layout.addWidget(achievements_back)  
 
+    self.stack.addWidget(self.profile_screen)
     self.stack.addWidget(self.home_widget)
     self.stack.addWidget(self.team_screen)
     self.stack.addWidget(self.upgrade_screen)
@@ -119,7 +119,9 @@ class Main(QMainWindow):
     self.setCentralWidget(self.stack)
 
     self.refresh()
-    
+
+    self.stack.setCurrentWidget(self.profile_screen)
+
     self.autosave_timer = QTimer(self)
     self.autosave_timer.timeout.connect(self.save)
     self.autosave_timer.start(30000)
@@ -166,6 +168,70 @@ class Main(QMainWindow):
             )
 
             self.list.addItem(item)
+
+  def select_profile(self):
+
+    row = (
+        self.profile_screen
+        .list
+        .currentRow()
+    )
+
+    if row < 0:
+        return
+
+    accounts = load_accounts()
+
+    self.current_user = accounts[row]
+
+    self.g = GameData()
+
+    save_path = get_save_path(self.current_user["id"])
+
+    if os.path.exists(save_path):
+
+      load_user_game(
+          self.current_user["id"],
+          self.g
+      )
+
+      # Rebuild the league from constants and restore progress.
+      if self.g.league_seed is not None:
+
+          create_league(
+              self.g,
+              resume=True
+          )
+
+      # Older saves don't have a league seed or standings.
+      elif self.g.league_week > 0:
+
+          QMessageBox.information(
+              self,
+              "League Save Updated",
+              "This save was created before league resuming "
+              "was supported.\n\n"
+              "A new league season will be generated."
+          )
+
+          create_league(self.g)
+
+    self.team_screen.game = self.g
+    self.gacha_screen.game = self.g
+
+    self.battle_screen.game = self.g
+    self.league_battle_screen.game = self.g
+
+    self.league_screen.game = self.g
+    self.achievement_screen.game = self.g
+
+    self.upgrade_screen.game = self.g
+
+    self.refresh()
+
+    self.stack.setCurrentWidget(
+        self.home_widget
+    )
 
   def spin(self):
     if self.g.gems > 0:
@@ -352,7 +418,8 @@ class Main(QMainWindow):
                 f""
             )
             
-        self.g.battle_wins += 1
+            self.g.battle_wins += 1
+
         self.g.highest_stage = max(self.g.highest_stage, stage)
 
         milestone_text = ""
@@ -533,7 +600,7 @@ class Main(QMainWindow):
 
     self._start_league_rally_match(
         [p for p in self.g.lineup.values() if p is not None],
-        team["lineup"],
+        list(team["lineup"].values()) if isinstance(team["lineup"], dict) else team["lineup"],
         f"League Match: Your Team vs {opponent_name}"
     )
       
@@ -552,6 +619,16 @@ class Main(QMainWindow):
 
     # Use the separate League Battle screen
     self.league_battle_screen.title.setText(title)
+
+    self.league_battle_screen.load_match_rosters(
+
+      player_team,
+
+      enemy_team,
+
+      title
+
+    )
 
     self.league_battle_screen.score_label.setText(
         "Set 1\n\n0 - 0\n\nSets: 0 - 0"
@@ -639,6 +716,7 @@ class Main(QMainWindow):
     if winner:
 
         self.g.coins += 50
+        self.g.battle_wins += 1
 
         your_team["wins"] += 1
         team["losses"] += 1
@@ -658,9 +736,24 @@ class Main(QMainWindow):
     your_team["played"] += 1
     team["played"] += 1
 
+    week_index = self.g.league_week
+
     week = self.g.league_schedule[
-    self.g.league_week
+        week_index
     ]
+
+    week_results = []
+
+    # Record your match.
+    week_results.append({
+        "team_a": "Your Team",
+        "team_b": opponent_name,
+        "winner": (
+            "Your Team"
+            if winner
+            else opponent_name
+        )
+    })
 
     for team_a_name, team_b_name in week:
 
@@ -691,10 +784,8 @@ class Main(QMainWindow):
       )
 
       ai_winner, _ = simulate_match(
-
-          team_a["lineup"],
-          team_b["lineup"]
-
+        list(team_a["lineup"].values()) if isinstance(team_a["lineup"], dict) else team_a["lineup"],
+        list(team_b["lineup"].values()) if isinstance(team_b["lineup"], dict) else team_b["lineup"]
       )
 
       if ai_winner:
@@ -702,14 +793,32 @@ class Main(QMainWindow):
           team_a["wins"] += 1
           team_b["losses"] += 1
 
+          ai_winner_name = team_a_name
+
       else:
 
           team_b["wins"] += 1
           team_a["losses"] += 1
 
+          ai_winner_name = team_b_name
+
+      week_results.append({
+          "team_a": team_a_name,
+          "team_b": team_b_name,
+          "winner": ai_winner_name
+      })
+
       team_a["played"] += 1
       team_b["played"] += 1
 
+    # Save this week's completed match results.
+    self.g.league_results[str(week_index)] = week_results
+
+    self.g.completed_league_matches.add(
+        week_index
+    )
+
+    # Advance to the next week.
     self.g.league_week += 1
 
     result_text = (
@@ -978,8 +1087,7 @@ class Main(QMainWindow):
         opponent["lineup"],
         f"PLAYOFFS - Round {self.g.playoff_round}: vs {opponent['name']}"
     )
-    
-  
+     
   def finish_playoff_rally_match(self, winner, scores):
 
     opponent = self.league_match_opponent
@@ -1003,6 +1111,7 @@ class Main(QMainWindow):
     if winner:
 
         self.g.coins += 2500
+        self.g.battle_wins += 1
 
         result_text += (
             "\nReward:\n"
@@ -1068,6 +1177,14 @@ class Main(QMainWindow):
 
         survivors = [your_team_entry]
 
+        round_match_results = [
+            {
+                "team_a": "Your Team",
+                "team_b": opponent_name,
+                "winner": "Your Team"
+            }
+        ]
+
         # Simulate the remaining AI matches.
         teams = [
             team for team in self.g.playoff_teams
@@ -1080,22 +1197,33 @@ class Main(QMainWindow):
             low = teams.pop(-1)
 
             ai_winner, _ = simulate_match(
-                high["lineup"],
-                low["lineup"]
+                list(high["lineup"].values()) if isinstance(high["lineup"], dict) else high["lineup"],
+                list(low["lineup"].values()) if isinstance(low["lineup"], dict) else low["lineup"]
             )
 
-            survivors.append(
-                high if ai_winner else low
-            )
+            ai_winning_team = high if ai_winner else low
+
+            round_match_results.append({
+                "team_a": high["name"],
+                "team_b": low["name"],
+                "winner": ai_winning_team["name"]
+            })
+
+            survivors.append(ai_winning_team)
 
         self.g.playoff_teams = survivors
 
-        # Record the round results.
         self.g.playoff_history.append({
+
             "round": self.g.playoff_round,
+
             "teams": [
-                team["name"] for team in survivors
-            ]
+                team["name"]
+                for team in survivors
+            ],
+
+            "matches": round_match_results
+
         })
 
         winners = [
@@ -1212,7 +1340,17 @@ class Main(QMainWindow):
     self.refresh()
   
   def save(self):
-    save_game(self.g, SAVE_FILE)
+
+    if not self.current_user:
+        return
+
+    save_user_game(
+
+        self.current_user["id"],
+
+        self.g
+
+    )
 
   def closeEvent(self, event):
     self.save()     
@@ -1250,9 +1388,16 @@ class Main(QMainWindow):
 
     if not self.g.league_teams:
 
-        create_league(
-            self.g
-        )
+      if self.g.league_seed is not None:
+
+          create_league(
+              self.g,
+              resume=True
+          )
+
+      else:
+
+          create_league(self.g)
 
     if (
       self.g.playoff_active

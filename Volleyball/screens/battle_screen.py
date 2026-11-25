@@ -162,3 +162,94 @@ class BattleScreen(QWidget):
             f"Enemy Rating: "
             f"{enemy_total // 7}"
         )
+
+    def load_match_rosters(self,player_team,enemy_team,title):
+
+        self.user_team.clear()
+        self.enemy_team.clear()
+
+        self.title.setText(title)
+
+        rarity_colors = {
+            "Starter": QColor(150, 150, 150),
+            "Common": QColor(0, 200, 0),
+            "Rare": QColor(0, 100, 255),
+            "Epic": QColor(170, 0, 255),
+            "Legendary": QColor(255, 140, 0)
+        }
+
+        positions = [
+            "LS1",
+            "LS2",
+            "MB1",
+            "MB2",
+            "S",
+            "RS",
+            "L"
+        ]
+
+        player_total = 0
+
+        for slot, player in zip(
+            positions,
+            player_team
+        ):
+
+            item = QListWidgetItem(
+
+                f"{slot} | "
+                f"{player.name} | "
+                f"{player.strength}"
+
+            )
+
+            item.setForeground(
+
+                rarity_colors.get(
+                    player.rarity,
+                    QColor("black")
+                )
+
+            )
+
+            self.user_team.addItem(item)
+
+            player_total += player.strength
+
+        enemy_total = 0
+
+        for slot, player in zip(
+            positions,
+            enemy_team
+        ):
+
+            item = QListWidgetItem(
+
+                f"{slot} | "
+                f"{player.name} | "
+                f"{player.strength}"
+
+            )
+
+            item.setForeground(
+
+                rarity_colors.get(
+                    player.rarity,
+                    QColor("black")
+                )
+
+            )
+
+            self.enemy_team.addItem(item)
+
+            enemy_total += player.strength
+
+        self.summary.setText(
+
+            f"Your Rating: "
+            f"{player_total // 7}\n\n"
+
+            f"Enemy Rating: "
+            f"{enemy_total // 7}"
+
+        )

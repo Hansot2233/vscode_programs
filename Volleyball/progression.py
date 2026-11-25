@@ -14,6 +14,21 @@ ACHIEVEMENTS = [
         "title": "Unstoppable", "description": "Win 100 battles.",
         "field": "battle_wins", "target": 100, "coins": 25000, "gems": 100
     },
+        {
+        "id": "battle_250", "category": "Battle",
+        "title": "Battle Hardened", "description": "Win 250 battles.",
+        "field": "battle_wins", "target": 250, "coins": 50000, "gems": 200
+    },
+    {
+        "id": "battle_500", "category": "Battle",
+        "title": "Battle Legend", "description": "Win 500 battles.",
+        "field": "battle_wins", "target": 500, "coins": 100000, "gems": 400
+    },
+    {
+        "id": "battle_1000", "category": "Battle",
+        "title": "Unbeatable Legend", "description": "Win 1,000 battles.",
+        "field": "battle_wins", "target": 1000, "coins": 250000, "gems": 750
+    },
     {
         "id": "stage_50", "category": "Battle",
         "title": "Stage Master", "description": "Clear Stage 50.",
@@ -23,6 +38,21 @@ ACHIEVEMENTS = [
         "id": "stage_100", "category": "Battle",
         "title": "Centurion", "description": "Clear Stage 100.",
         "field": "highest_stage", "target": 100, "coins": 50000, "gems": 200
+    },
+    {
+        "id": "stage_150", "category": "Battle",
+        "title": "Elite Competitor", "description": "Reach Stage 150.",
+        "field": "highest_stage", "target": 150, "coins": 75000, "gems": 300
+    },
+    {
+        "id": "stage_200", "category": "Battle",
+        "title": "Beyond Limits", "description": "Reach Stage 200.",
+        "field": "highest_stage", "target": 200, "coins": 150000, "gems": 500
+    },
+    {
+        "id": "stage_300", "category": "Battle",
+        "title": "Ultimate Challenger", "description": "Reach Stage 300.",
+        "field": "highest_stage", "target": 300, "coins": 350000, "gems": 1000
     },
     {
         "id": "recruiter", "category": "Collection",
@@ -40,6 +70,16 @@ ACHIEVEMENTS = [
         "field": "unique_players", "target": 50, "coins": 15000, "gems": 100
     },
     {
+        "id": "collector_75", "category": "Collection",
+        "title": "Expanding Collection", "description": "Own 75 unique players.",
+        "field": "unique_players", "target": 75, "coins": 25000, "gems": 150
+    },
+    {
+        "id": "collector_100", "category": "Collection",
+        "title": "Massive Collection", "description": "Own 100 unique players.",
+        "field": "unique_players", "target": 100, "coins": 50000, "gems": 250
+    },
+    {
         "id": "legendary_5", "category": "Collection",
         "title": "Legendary Collector", "description": "Own 5 Legendary players.",
         "field": "legendary_count", "target": 5, "coins": 10000, "gems": 100
@@ -55,14 +95,49 @@ ACHIEVEMENTS = [
         "field": "total_upgrades", "target": 50, "coins": 10000, "gems": 75
     },
     {
+        "id": "upgrade_250", "category": "Upgrades",
+        "title": "Dedicated Trainer", "description": "Perform 250 stat upgrades.",
+        "field": "total_upgrades", "target": 250, "coins": 50000, "gems": 200
+    },
+    {
+        "id": "upgrade_500", "category": "Upgrades",
+        "title": "Upgrade Addict", "description": "Perform 500 stat upgrades.",
+        "field": "total_upgrades", "target": 500, "coins": 100000, "gems": 350
+    },
+    {
+        "id": "upgrade_1000", "category": "Upgrades",
+        "title": "Master Trainer", "description": "Perform 1,000 stat upgrades.",
+        "field": "total_upgrades", "target": 1000, "coins": 250000, "gems": 750
+    },
+    {
         "id": "level_50", "category": "Upgrades",
         "title": "Perfectionist", "description": "Perform 50 stat upgrades on a single player.",
         "field": "highest_player_level", "target": 50, "coins": 15000, "gems": 100
     },
     {
+        "id": "level_100", "category": "Upgrades",
+        "title": "Maximum Potential", "description": "Have a player reach 100 combined stat upgrade levels.",
+        "field": "highest_player_level_ever", "target": 100, "coins": 50000, "gems": 250
+    },
+    {
+        "id": "level_200", "category": "Upgrades",
+        "title": "Perfected Player", "description": "Have a player reach 200 combined stat upgrade levels.",
+        "field": "highest_player_level_ever", "target": 200, "coins": 150000, "gems": 500
+    },
+    {
         "id": "league_first", "category": "League",
         "title": "Competitor", "description": "Complete your first league season.",
         "field": "league_seasons_completed", "target": 1, "coins": 2500, "gems": 25
+    },
+    {
+        "id": "league_5", "category": "League",
+        "title": "League Veteran", "description": "Complete 5 league seasons.",
+        "field": "league_seasons_completed", "target": 5, "coins": 50000, "gems": 200
+    },
+    {
+        "id": "league_10", "category": "League",
+        "title": "League Master", "description": "Complete 10 league seasons.",
+        "field": "league_seasons_completed", "target": 10, "coins": 125000, "gems": 400
     },
     {
         "id": "league_top4", "category": "League",
@@ -73,6 +148,31 @@ ACHIEVEMENTS = [
         "id": "league_champion", "category": "League",
         "title": "League Champion", "description": "Win a league championship.",
         "field": "league_championships", "target": 1, "coins": 15000, "gems": 150
+    },
+    {
+        "id": "championship_5", "category": "League",
+        "title": "Dynasty Builder", "description": "Win 5 league championships.",
+        "field": "league_championships", "target": 5, "coins": 100000, "gems": 400
+    },
+    {
+        "id": "championship_10", "category": "League",
+        "title": "Volleyball Dynasty", "description": "Win 10 league championships.",
+        "field": "league_championships", "target": 10, "coins": 250000, "gems": 750
+    },
+    {
+        "id": "prestige_1", "category": "Prestige",
+        "title": "First Prestige", "description": "Prestige a player once.",
+        "field": "total_prestiges", "target": 1, "coins": 10000, "gems": 75
+    },
+    {
+        "id": "prestige_5", "category": "Prestige",
+        "title": "Prestige Collector", "description": "Reach 5 total prestiges.",
+        "field": "total_prestiges", "target": 5, "coins": 50000, "gems": 200
+    },
+    {
+        "id": "prestige_10", "category": "Prestige",
+        "title": "Prestige Master", "description": "Reach 10 total prestiges.",
+        "field": "total_prestiges", "target": 10, "coins": 125000, "gems": 500
     },
 ]
 
@@ -104,6 +204,8 @@ def achievement_values(game):
         "league_seasons_completed": getattr(game, "league_seasons_completed", 0),
         "league_top4_finishes": getattr(game, "league_top4_finishes", 0),
         "league_championships": getattr(game, "league_championships", 0),
+        "highest_player_level_ever": getattr(game, "highest_player_level_ever", 0),
+        "total_prestiges": getattr(game, "total_prestiges", 0),
     }
 
 

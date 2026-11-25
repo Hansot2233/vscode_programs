@@ -121,7 +121,7 @@ class TeamScreen(QWidget):
                 f"★ {player.name} | "
                 f"{player.position} | "
                 f"{player.rarity} | "
-                f"LV {player.level} | "
+                f"LV {player.prestige_level} | "
                 f"STR {player.strength}"
             )
 
@@ -147,7 +147,7 @@ class TeamScreen(QWidget):
                 f"{player.name} | "
                 f"{player.position} | "
                 f"{player.rarity} | "
-                f"LV {player.level} | "
+                f"LV {player.prestige_level} | "
                 f"STR {player.strength}"
             )
 
@@ -209,6 +209,28 @@ class TeamScreen(QWidget):
             self.selected_slot
         ]
 
+        # Prevent duplicate names in the lineup for LS and MB
+        if required_position in ("LS", "MB"):
+
+            for slot, player in self.game.lineup.items():
+
+                if (
+                    player is not None
+                    and slot != self.selected_slot
+                    and player.name == self.selected_player.name
+                ):
+
+                    QMessageBox.information(
+                        self,
+                        "Duplicate Player",
+                        f"{self.selected_player.name} "
+                        f"is already in the lineup at {slot}."
+                    )
+
+                    return
+
+        self.game.update_highest_team_rating()
+
         if self.selected_player.position != required_position:
 
             QMessageBox.information(
@@ -246,6 +268,8 @@ class TeamScreen(QWidget):
         self.game.lineup[
             self.selected_slot
         ] = self.selected_player
+
+        self.game.update_highest_team_rating()
 
         self.refresh()
 

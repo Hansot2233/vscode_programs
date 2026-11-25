@@ -166,7 +166,11 @@ class PlayerUpgradeScreen(QWidget):
 
             f"Prestige: {self.player.prestige_level}\n"
             f"Permanent Bonus: "
-            f"{self.player.prestige_level * 10}%\n\n"
+            f"{self.player.prestige_level * 10}%\n"
+            f"Lifetime Upgrade Spending: "
+            f"{self.player.coins_spent:,}\n"
+            f"Next Prestige Cost: "
+            f"{int(self.player.coins_spent * 0.5):,} Coins\n\n"
 
             f"STR: {self.player.strength}\n"
             f"Coins: {self.game.coins}"
@@ -273,6 +277,9 @@ class PlayerUpgradeScreen(QWidget):
             self.player.attack += self.get_stat_gain("attack")
             self.player.attack_level += 1
 
+            self.game.update_highest_team_rating()
+            
+
         self.refresh()
 
     def upgrade_block(self):
@@ -286,6 +293,8 @@ class PlayerUpgradeScreen(QWidget):
             self.player.coins_spent += cost
             self.player.block += self.get_stat_gain("block")
             self.player.block_level += 1
+
+            self.game.update_highest_team_rating()
 
         self.refresh()
 
@@ -301,6 +310,8 @@ class PlayerUpgradeScreen(QWidget):
             self.player.receive += self.get_stat_gain("receive")
             self.player.receive_level += 1
 
+            self.game.update_highest_team_rating()
+
         self.refresh()
 
     def upgrade_setting(self):
@@ -315,6 +326,8 @@ class PlayerUpgradeScreen(QWidget):
             self.player.setting += self.get_stat_gain("setting")
             self.player.setting_level += 1
 
+            self.game.update_highest_team_rating()
+
         self.refresh()
 
     def upgrade_serve(self):
@@ -328,6 +341,8 @@ class PlayerUpgradeScreen(QWidget):
             self.player.coins_spent += cost
             self.player.serve += self.get_stat_gain("serve")
             self.player.serve_level += 1
+
+            self.game.update_highest_team_rating()
 
         self.refresh()
 
@@ -383,6 +398,8 @@ class PlayerUpgradeScreen(QWidget):
 
         # Track spending for refunds
         self.player.coins_spent += total_cost
+
+        self.game.update_highest_team_rating()
 
         self.refresh()
 
@@ -458,150 +475,149 @@ class PlayerUpgradeScreen(QWidget):
 
         ]
 
+    
     def prestige_player(self):
+
+        if not self.player:
+            return
 
         duplicates = self.get_duplicates()
 
         if not duplicates:
-
             self.silent_message(
                 "No Duplicate",
                 "You need a duplicate copy of this player."
             )
+            return
+
+        # Never consume a duplicate that is currently in the lineup
+        available_duplicates = [
+            duplicate
+            for duplicate in duplicates
+            if not any(
+                lineup_player is duplicate
+                for lineup_player in self.game.lineup.values()
+            )
+        ]
+
+        if not available_duplicates:
+            self.silent_message(
+                "Duplicate In Lineup",
+                "All duplicate copies of this player are currently "
+                "assigned to your lineup.\n\n"
+                "Remove one from your lineup before prestiging."
+            )
+            return
+
+        # Prestige costs 50% of lifetime upgrade spending
+        prestige_cost = int(
+            self.player.coins_spent * 0.5
+        )
+
+        # Check affordability before consuming duplicate
+        if self.game.coins < prestige_cost:
+
+            QMessageBox.warning(
+                self,
+                "Not Enough Coins",
+                f"You need {prestige_cost:,} coins to prestige.\n"
+                f"You currently have {self.game.coins:,} coins."
+            )
 
             return
 
-        duplicate = duplicates[0]
+        result = QMessageBox.question(
+            self,
+            "Confirm Prestige",
+            f"Prestige {self.player.name}?\n\n"
+            f"Prestige Cost: {prestige_cost:,} Coins\n"
+            f"Permanent Bonus After Prestige: "
+            f"{(self.player.prestige_level + 1) * 10}%\n\n"
+            f"Your player will KEEP all current levels and stats.\n"
+            f"The duplicate player will be consumed.",
+            QMessageBox.StandardButton.Yes |
+            QMessageBox.StandardButton.No
+        )
 
+        if result != QMessageBox.StandardButton.Yes:
+            return
+
+        # Charge prestige cost
+        self.game.coins -= prestige_cost
+
+        # Consume duplicate
+        duplicate = available_duplicates[0]
         self.game.roster.remove(duplicate)
 
+        # Increase permanent prestige bonus
         self.player.prestige_level += 1
 
-        self.reduce_stat_upgrade(
-            "attack"
-        )
-
-        self.reduce_stat_upgrade(
-            "block"
-        )
-
-        self.reduce_stat_upgrade(
-            "receive"
-        )
-
-        self.reduce_stat_upgrade(
-            "setting"
-        )
-
-        self.reduce_stat_upgrade(
-            "serve"
-        )
+        # Update highest team rating
+        self.game.update_highest_team_rating()
 
         self.silent_message(
             "Prestige Success",
             f"{self.player.name}\n"
-            f"Prestige "
-            f"{self.player.prestige_level}"
+            f"Prestige {self.player.prestige_level}\n"
+            f"Permanent Bonus: "
+            f"{self.player.prestige_level * 10}%\n"
+            f"Coins Spent: {prestige_cost:,}"
         )
 
         self.refresh()
-
-    def reduce_stat_upgrade(self, stat_name):
-
-        level_attr = f"{stat_name}_level"
-
-        current_level = getattr(
-            self.player,
-            level_attr
-        )
-
-        new_level = current_level // 2
-
-        levels_removed = (
-            current_level -
-            new_level
-        )
-
-        gain_per_level = (
-            self.get_stat_gain(
-                stat_name
-            )
-        )
-
-        current_stat = getattr(
-            self.player,
-            stat_name
-        )
-
-        setattr(
-            self.player,
-            stat_name,
-            current_stat -
-            (
-                levels_removed *
-                gain_per_level
-            )
-        )
-
-        setattr(
-            self.player,
-            level_attr,
-            new_level
-        )
-
+    
     def refund_player(self):
 
-        if (
-
-            self.player.attack_level == 0
-            and
-            self.player.block_level == 0
-            and
-            self.player.receive_level == 0
-            and
-            self.player.setting_level == 0
-            and
-            self.player.serve_level == 0
-
-        ):
+        if not self.player:
             return
 
-        refund = self.player.coins_spent
-
-        result = QMessageBox.question(
-            self,
-            "Refund Upgrades",
-            f"Refund all upgrades for\n"
-            f"{refund:,} coins?"
-        )
-
-        if (
-            result
-            !=
-            QMessageBox.StandardButton.Yes
-        ):
-            return
-
-        for stat_name in [
+        stat_names = [
             "attack",
             "block",
             "receive",
             "setting",
             "serve"
-        ]:
+        ]
 
-            level_attr = (
+        # Calculate refund from currently owned upgrades
+        refund = 0
+
+        for stat_name in stat_names:
+
+            level = getattr(
+                self.player,
                 f"{stat_name}_level"
             )
+
+            refund += sum(
+                self.get_upgrade_cost(i)
+                for i in range(level)
+            )
+
+        if refund <= 0:
+            return
+
+        result = QMessageBox.question(
+            self,
+            "Refund Upgrades",
+            f"Refund all current upgrades for\n"
+            f"{refund:,} coins?"
+        )
+
+        if result != QMessageBox.StandardButton.Yes:
+            return
+
+        # Remove current upgrades
+        for stat_name in stat_names:
+
+            level_attr = f"{stat_name}_level"
 
             level = getattr(
                 self.player,
                 level_attr
             )
 
-            gain = self.get_stat_gain(
-                stat_name
-            )
+            gain = self.get_stat_gain(stat_name)
 
             current_value = getattr(
                 self.player,
@@ -611,10 +627,7 @@ class PlayerUpgradeScreen(QWidget):
             setattr(
                 self.player,
                 stat_name,
-                current_value -
-                (
-                    level * gain
-                )
+                current_value - (level * gain)
             )
 
             setattr(
@@ -623,9 +636,14 @@ class PlayerUpgradeScreen(QWidget):
                 0
             )
 
+        # Return coins
         self.game.coins += refund
 
-        self.player.coins_spent = 0
+        # IMPORTANT:
+        # Do NOT reset coins_spent.
+        # It tracks lifetime upgrade spending.
+
+        self.game.update_highest_team_rating()
 
         self.refresh()
 
@@ -645,3 +663,18 @@ class PlayerUpgradeScreen(QWidget):
         )
 
         msg.exec()
+
+    def update_highest_player_level(self):
+
+        player_level = (
+            self.player.attack_level
+            + self.player.block_level
+            + self.player.receive_level
+            + self.player.setting_level
+            + self.player.serve_level
+        )
+
+        self.game.highest_player_level_ever = max(
+            self.game.highest_player_level_ever,
+            player_level
+        )

@@ -1,0 +1,1466 @@
+{
+  "level": 6,
+  "battle_level": 6,
+  "current_enemy_league": "Common Tier (2/7) | 1.15x",
+  "current_enemy_team": [
+    {
+      "name": "Daniel Riber",
+      "position": "LS",
+      "rarity": "Common",
+      "attack": 54,
+      "block": 34,
+      "receive": 42,
+      "setting": 32,
+      "serve": 49,
+      "level": 1,
+      "attack_level": 0,
+      "block_level": 0,
+      "receive_level": 0,
+      "setting_level": 0,
+      "serve_level": 0,
+      "prestige_level": 0,
+      "coins_spent": 0
+    },
+    {
+      "name": "Adelina Bulle",
+      "position": "LS",
+      "rarity": "Starter",
+      "attack": 27,
+      "block": 12,
+      "receive": 23,
+      "setting": 10,
+      "serve": 21,
+      "level": 1,
+      "attack_level": 0,
+      "block_level": 0,
+      "receive_level": 0,
+      "setting_level": 0,
+      "serve_level": 0,
+      "prestige_level": 0,
+      "coins_spent": 0
+    },
+    {
+      "name": "Haru Ishikawa",
+      "position": "MB",
+      "rarity": "Common",
+      "attack": 52,
+      "block": 57,
+      "receive": 28,
+      "setting": 26,
+      "serve": 39,
+      "level": 1,
+      "attack_level": 0,
+      "block_level": 0,
+      "receive_level": 0,
+      "setting_level": 0,
+      "serve_level": 0,
+      "prestige_level": 0,
+      "coins_spent": 0
+    },
+    {
+      "name": "Vladimír Dudley",
+      "position": "MB",
+      "rarity": "Starter",
+      "attack": 32,
+      "block": 32,
+      "receive": 4,
+      "setting": 6,
+      "serve": 16,
+      "level": 1,
+      "attack_level": 0,
+      "block_level": 0,
+      "receive_level": 0,
+      "setting_level": 0,
+      "serve_level": 0,
+      "prestige_level": 0,
+      "coins_spent": 0
+    },
+    {
+      "name": "Takuya Yamamoto",
+      "position": "S",
+      "rarity": "Starter",
+      "attack": 8,
+      "block": 16,
+      "receive": 14,
+      "setting": 37,
+      "serve": 21,
+      "level": 1,
+      "attack_level": 0,
+      "block_level": 0,
+      "receive_level": 0,
+      "setting_level": 0,
+      "serve_level": 0,
+      "prestige_level": 0,
+      "coins_spent": 0
+    },
+    {
+      "name": "Ingrid Vacca",
+      "position": "RS",
+      "rarity": "Starter",
+      "attack": 35,
+      "block": 27,
+      "receive": 3,
+      "setting": 6,
+      "serve": 24,
+      "level": 1,
+      "attack_level": 0,
+      "block_level": 0,
+      "receive_level": 0,
+      "setting_level": 0,
+      "serve_level": 0,
+      "prestige_level": 0,
+      "coins_spent": 0
+    },
+    {
+      "name": "Hiroki Suzuki",
+      "position": "L",
+      "rarity": "Starter",
+      "attack": 0,
+      "block": 0,
+      "receive": 49,
+      "setting": 17,
+      "serve": 0,
+      "level": 1,
+      "attack_level": 0,
+      "block_level": 0,
+      "receive_level": 0,
+      "setting_level": 0,
+      "serve_level": 0,
+      "prestige_level": 0,
+      "coins_spent": 0
+    }
+  ],
+  "coins": 245,
+  "gems": 10,
+  "highest_team_rating": 62.857142857142854,
+  "highest_player_level_ever": 0,
+  "total_prestiges": 0,
+  "roster": [
+    {
+      "name": "Soudeh De Jonge",
+      "position": "LS",
+      "rarity": "Starter",
+      "attack": 26,
+      "block": 10,
+      "receive": 19,
+      "setting": 8,
+      "serve": 18,
+      "level": 1,
+      "attack_level": 0,
+      "block_level": 0,
+      "receive_level": 0,
+      "setting_level": 0,
+      "serve_level": 0,
+      "prestige_level": 0,
+      "coins_spent": 0
+    },
+    {
+      "name": "Adelina Bulle",
+      "position": "LS",
+      "rarity": "Starter",
+      "attack": 54,
+      "block": 21,
+      "receive": 40,
+      "setting": 29,
+      "serve": 49,
+      "level": 1,
+      "attack_level": 10,
+      "block_level": 10,
+      "receive_level": 10,
+      "setting_level": 20,
+      "serve_level": 10,
+      "prestige_level": 0,
+      "coins_spent": 3051
+    },
+    {
+      "name": "Vladimír Dudley",
+      "position": "MB",
+      "rarity": "Starter",
+      "attack": 88,
+      "block": 88,
+      "receive": 24,
+      "setting": 26,
+      "serve": 54,
+      "level": 1,
+      "attack_level": 20,
+      "block_level": 20,
+      "receive_level": 20,
+      "setting_level": 20,
+      "serve_level": 20,
+      "prestige_level": 0,
+      "coins_spent": 5155
+    },
+    {
+      "name": "Carleton Gehrig",
+      "position": "MB",
+      "rarity": "Starter",
+      "attack": 87,
+      "block": 89,
+      "receive": 27,
+      "setting": 23,
+      "serve": 52,
+      "level": 1,
+      "attack_level": 20,
+      "block_level": 20,
+      "receive_level": 20,
+      "setting_level": 20,
+      "serve_level": 20,
+      "prestige_level": 0,
+      "coins_spent": 5155
+    },
+    {
+      "name": "Ingrid Vacca",
+      "position": "RS",
+      "rarity": "Starter",
+      "attack": 91,
+      "block": 64,
+      "receive": 23,
+      "setting": 26,
+      "serve": 81,
+      "level": 1,
+      "attack_level": 20,
+      "block_level": 20,
+      "receive_level": 20,
+      "setting_level": 20,
+      "serve_level": 20,
+      "prestige_level": 0,
+      "coins_spent": 5155
+    },
+    {
+      "name": "Takuya Yamamoto",
+      "position": "S",
+      "rarity": "Starter",
+      "attack": 7,
+      "block": 14,
+      "receive": 13,
+      "setting": 33,
+      "serve": 19,
+      "level": 1,
+      "attack_level": 0,
+      "block_level": 0,
+      "receive_level": 0,
+      "setting_level": 0,
+      "serve_level": 0,
+      "prestige_level": 0,
+      "coins_spent": 0
+    },
+    {
+      "name": "Hiroki Suzuki",
+      "position": "L",
+      "rarity": "Starter",
+      "attack": 20,
+      "block": 20,
+      "receive": 123,
+      "setting": 75,
+      "serve": 20,
+      "level": 1,
+      "attack_level": 20,
+      "block_level": 20,
+      "receive_level": 20,
+      "setting_level": 20,
+      "serve_level": 20,
+      "prestige_level": 0,
+      "coins_spent": 5155
+    },
+    {
+      "name": "Ren Kuroda",
+      "position": "LS",
+      "rarity": "Common",
+      "attack": 106,
+      "block": 49,
+      "receive": 76,
+      "setting": 47,
+      "serve": 102,
+      "level": 1,
+      "attack_level": 20,
+      "block_level": 20,
+      "receive_level": 20,
+      "setting_level": 20,
+      "serve_level": 20,
+      "prestige_level": 1,
+      "coins_spent": 5155
+    },
+    {
+      "name": "Riku Endo",
+      "position": "S",
+      "rarity": "Common",
+      "attack": 47,
+      "block": 74,
+      "receive": 53,
+      "setting": 113,
+      "serve": 71,
+      "level": 1,
+      "attack_level": 20,
+      "block_level": 20,
+      "receive_level": 20,
+      "setting_level": 20,
+      "serve_level": 10,
+      "prestige_level": 1,
+      "coins_spent": 4629
+    },
+    {
+      "name": "Akira Nakano",
+      "position": "S",
+      "rarity": "Common",
+      "attack": 29,
+      "block": 35,
+      "receive": 31,
+      "setting": 52,
+      "serve": 42,
+      "level": 1,
+      "attack_level": 0,
+      "block_level": 0,
+      "receive_level": 0,
+      "setting_level": 0,
+      "serve_level": 0,
+      "prestige_level": 0,
+      "coins_spent": 0
+    }
+  ],
+  "lineup": {
+    "LS1": 7,
+    "LS2": 1,
+    "MB1": 2,
+    "MB2": 3,
+    "S": 8,
+    "RS": 4,
+    "L": 6
+  },
+  "league_week": 12,
+  "league_schedule": [
+    [
+      [
+        "Your Team",
+        "Ubugawa"
+      ],
+      [
+        "Karasuno",
+        "Tsubakihara"
+      ],
+      [
+        "Nekoma",
+        "Mujinazaka"
+      ],
+      [
+        "Aoba Johsai",
+        "Shinzen"
+      ],
+      [
+        "Shiratorizawa",
+        "Wakutani"
+      ],
+      [
+        "Fukurodani",
+        "Johzenji"
+      ],
+      [
+        "Date Tech",
+        "Nohebi"
+      ],
+      [
+        "Inarizaki",
+        "Kamomedai"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Tsubakihara"
+      ],
+      [
+        "Ubugawa",
+        "Mujinazaka"
+      ],
+      [
+        "Karasuno",
+        "Shinzen"
+      ],
+      [
+        "Nekoma",
+        "Wakutani"
+      ],
+      [
+        "Aoba Johsai",
+        "Johzenji"
+      ],
+      [
+        "Shiratorizawa",
+        "Nohebi"
+      ],
+      [
+        "Fukurodani",
+        "Kamomedai"
+      ],
+      [
+        "Date Tech",
+        "Inarizaki"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Mujinazaka"
+      ],
+      [
+        "Tsubakihara",
+        "Shinzen"
+      ],
+      [
+        "Ubugawa",
+        "Wakutani"
+      ],
+      [
+        "Karasuno",
+        "Johzenji"
+      ],
+      [
+        "Nekoma",
+        "Nohebi"
+      ],
+      [
+        "Aoba Johsai",
+        "Kamomedai"
+      ],
+      [
+        "Shiratorizawa",
+        "Inarizaki"
+      ],
+      [
+        "Fukurodani",
+        "Date Tech"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Shinzen"
+      ],
+      [
+        "Mujinazaka",
+        "Wakutani"
+      ],
+      [
+        "Tsubakihara",
+        "Johzenji"
+      ],
+      [
+        "Ubugawa",
+        "Nohebi"
+      ],
+      [
+        "Karasuno",
+        "Kamomedai"
+      ],
+      [
+        "Nekoma",
+        "Inarizaki"
+      ],
+      [
+        "Aoba Johsai",
+        "Date Tech"
+      ],
+      [
+        "Shiratorizawa",
+        "Fukurodani"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Wakutani"
+      ],
+      [
+        "Shinzen",
+        "Johzenji"
+      ],
+      [
+        "Mujinazaka",
+        "Nohebi"
+      ],
+      [
+        "Tsubakihara",
+        "Kamomedai"
+      ],
+      [
+        "Ubugawa",
+        "Inarizaki"
+      ],
+      [
+        "Karasuno",
+        "Date Tech"
+      ],
+      [
+        "Nekoma",
+        "Fukurodani"
+      ],
+      [
+        "Aoba Johsai",
+        "Shiratorizawa"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Johzenji"
+      ],
+      [
+        "Wakutani",
+        "Nohebi"
+      ],
+      [
+        "Shinzen",
+        "Kamomedai"
+      ],
+      [
+        "Mujinazaka",
+        "Inarizaki"
+      ],
+      [
+        "Tsubakihara",
+        "Date Tech"
+      ],
+      [
+        "Ubugawa",
+        "Fukurodani"
+      ],
+      [
+        "Karasuno",
+        "Shiratorizawa"
+      ],
+      [
+        "Nekoma",
+        "Aoba Johsai"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Nohebi"
+      ],
+      [
+        "Johzenji",
+        "Kamomedai"
+      ],
+      [
+        "Wakutani",
+        "Inarizaki"
+      ],
+      [
+        "Shinzen",
+        "Date Tech"
+      ],
+      [
+        "Mujinazaka",
+        "Fukurodani"
+      ],
+      [
+        "Tsubakihara",
+        "Shiratorizawa"
+      ],
+      [
+        "Ubugawa",
+        "Aoba Johsai"
+      ],
+      [
+        "Karasuno",
+        "Nekoma"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Kamomedai"
+      ],
+      [
+        "Nohebi",
+        "Inarizaki"
+      ],
+      [
+        "Johzenji",
+        "Date Tech"
+      ],
+      [
+        "Wakutani",
+        "Fukurodani"
+      ],
+      [
+        "Shinzen",
+        "Shiratorizawa"
+      ],
+      [
+        "Mujinazaka",
+        "Aoba Johsai"
+      ],
+      [
+        "Tsubakihara",
+        "Nekoma"
+      ],
+      [
+        "Ubugawa",
+        "Karasuno"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Inarizaki"
+      ],
+      [
+        "Kamomedai",
+        "Date Tech"
+      ],
+      [
+        "Nohebi",
+        "Fukurodani"
+      ],
+      [
+        "Johzenji",
+        "Shiratorizawa"
+      ],
+      [
+        "Wakutani",
+        "Aoba Johsai"
+      ],
+      [
+        "Shinzen",
+        "Nekoma"
+      ],
+      [
+        "Mujinazaka",
+        "Karasuno"
+      ],
+      [
+        "Tsubakihara",
+        "Ubugawa"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Date Tech"
+      ],
+      [
+        "Inarizaki",
+        "Fukurodani"
+      ],
+      [
+        "Kamomedai",
+        "Shiratorizawa"
+      ],
+      [
+        "Nohebi",
+        "Aoba Johsai"
+      ],
+      [
+        "Johzenji",
+        "Nekoma"
+      ],
+      [
+        "Wakutani",
+        "Karasuno"
+      ],
+      [
+        "Shinzen",
+        "Ubugawa"
+      ],
+      [
+        "Mujinazaka",
+        "Tsubakihara"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Fukurodani"
+      ],
+      [
+        "Date Tech",
+        "Shiratorizawa"
+      ],
+      [
+        "Inarizaki",
+        "Aoba Johsai"
+      ],
+      [
+        "Kamomedai",
+        "Nekoma"
+      ],
+      [
+        "Nohebi",
+        "Karasuno"
+      ],
+      [
+        "Johzenji",
+        "Ubugawa"
+      ],
+      [
+        "Wakutani",
+        "Tsubakihara"
+      ],
+      [
+        "Shinzen",
+        "Mujinazaka"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Shiratorizawa"
+      ],
+      [
+        "Fukurodani",
+        "Aoba Johsai"
+      ],
+      [
+        "Date Tech",
+        "Nekoma"
+      ],
+      [
+        "Inarizaki",
+        "Karasuno"
+      ],
+      [
+        "Kamomedai",
+        "Ubugawa"
+      ],
+      [
+        "Nohebi",
+        "Tsubakihara"
+      ],
+      [
+        "Johzenji",
+        "Mujinazaka"
+      ],
+      [
+        "Wakutani",
+        "Shinzen"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Aoba Johsai"
+      ],
+      [
+        "Shiratorizawa",
+        "Nekoma"
+      ],
+      [
+        "Fukurodani",
+        "Karasuno"
+      ],
+      [
+        "Date Tech",
+        "Ubugawa"
+      ],
+      [
+        "Inarizaki",
+        "Tsubakihara"
+      ],
+      [
+        "Kamomedai",
+        "Mujinazaka"
+      ],
+      [
+        "Nohebi",
+        "Shinzen"
+      ],
+      [
+        "Johzenji",
+        "Wakutani"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Nekoma"
+      ],
+      [
+        "Aoba Johsai",
+        "Karasuno"
+      ],
+      [
+        "Shiratorizawa",
+        "Ubugawa"
+      ],
+      [
+        "Fukurodani",
+        "Tsubakihara"
+      ],
+      [
+        "Date Tech",
+        "Mujinazaka"
+      ],
+      [
+        "Inarizaki",
+        "Shinzen"
+      ],
+      [
+        "Kamomedai",
+        "Wakutani"
+      ],
+      [
+        "Nohebi",
+        "Johzenji"
+      ]
+    ],
+    [
+      [
+        "Your Team",
+        "Karasuno"
+      ],
+      [
+        "Nekoma",
+        "Ubugawa"
+      ],
+      [
+        "Aoba Johsai",
+        "Tsubakihara"
+      ],
+      [
+        "Shiratorizawa",
+        "Mujinazaka"
+      ],
+      [
+        "Fukurodani",
+        "Shinzen"
+      ],
+      [
+        "Date Tech",
+        "Wakutani"
+      ],
+      [
+        "Inarizaki",
+        "Johzenji"
+      ],
+      [
+        "Kamomedai",
+        "Nohebi"
+      ]
+    ]
+  ],
+  "league_number": 1,
+  "league_top4_finishes": 0,
+  "league_seed": 3065400778,
+  "league_generation_strength": 19.0,
+  "league_minimum_percentage": 15,
+  "league_standings": {
+    "Your Team": {
+      "wins": 12,
+      "losses": 0,
+      "played": 12
+    },
+    "Karasuno": {
+      "wins": 7,
+      "losses": 5,
+      "played": 12
+    },
+    "Nekoma": {
+      "wins": 7,
+      "losses": 5,
+      "played": 12
+    },
+    "Aoba Johsai": {
+      "wins": 8,
+      "losses": 4,
+      "played": 12
+    },
+    "Shiratorizawa": {
+      "wins": 9,
+      "losses": 3,
+      "played": 12
+    },
+    "Fukurodani": {
+      "wins": 4,
+      "losses": 8,
+      "played": 12
+    },
+    "Date Tech": {
+      "wins": 5,
+      "losses": 7,
+      "played": 12
+    },
+    "Inarizaki": {
+      "wins": 5,
+      "losses": 7,
+      "played": 12
+    },
+    "Kamomedai": {
+      "wins": 6,
+      "losses": 6,
+      "played": 12
+    },
+    "Nohebi": {
+      "wins": 2,
+      "losses": 10,
+      "played": 12
+    },
+    "Johzenji": {
+      "wins": 7,
+      "losses": 5,
+      "played": 12
+    },
+    "Wakutani": {
+      "wins": 4,
+      "losses": 8,
+      "played": 12
+    },
+    "Shinzen": {
+      "wins": 4,
+      "losses": 8,
+      "played": 12
+    },
+    "Mujinazaka": {
+      "wins": 6,
+      "losses": 6,
+      "played": 12
+    },
+    "Tsubakihara": {
+      "wins": 3,
+      "losses": 9,
+      "played": 12
+    },
+    "Ubugawa": {
+      "wins": 7,
+      "losses": 5,
+      "played": 12
+    }
+  },
+  "league_results": {
+    "0": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Ubugawa",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Karasuno",
+        "team_b": "Tsubakihara",
+        "winner": "Karasuno"
+      },
+      {
+        "team_a": "Nekoma",
+        "team_b": "Mujinazaka",
+        "winner": "Nekoma"
+      },
+      {
+        "team_a": "Aoba Johsai",
+        "team_b": "Shinzen",
+        "winner": "Aoba Johsai"
+      },
+      {
+        "team_a": "Shiratorizawa",
+        "team_b": "Wakutani",
+        "winner": "Shiratorizawa"
+      },
+      {
+        "team_a": "Fukurodani",
+        "team_b": "Johzenji",
+        "winner": "Johzenji"
+      },
+      {
+        "team_a": "Date Tech",
+        "team_b": "Nohebi",
+        "winner": "Date Tech"
+      },
+      {
+        "team_a": "Inarizaki",
+        "team_b": "Kamomedai",
+        "winner": "Inarizaki"
+      }
+    ],
+    "1": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Tsubakihara",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Ubugawa",
+        "team_b": "Mujinazaka",
+        "winner": "Ubugawa"
+      },
+      {
+        "team_a": "Karasuno",
+        "team_b": "Shinzen",
+        "winner": "Karasuno"
+      },
+      {
+        "team_a": "Nekoma",
+        "team_b": "Wakutani",
+        "winner": "Nekoma"
+      },
+      {
+        "team_a": "Aoba Johsai",
+        "team_b": "Johzenji",
+        "winner": "Johzenji"
+      },
+      {
+        "team_a": "Shiratorizawa",
+        "team_b": "Nohebi",
+        "winner": "Shiratorizawa"
+      },
+      {
+        "team_a": "Fukurodani",
+        "team_b": "Kamomedai",
+        "winner": "Kamomedai"
+      },
+      {
+        "team_a": "Date Tech",
+        "team_b": "Inarizaki",
+        "winner": "Inarizaki"
+      }
+    ],
+    "2": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Mujinazaka",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Tsubakihara",
+        "team_b": "Shinzen",
+        "winner": "Tsubakihara"
+      },
+      {
+        "team_a": "Ubugawa",
+        "team_b": "Wakutani",
+        "winner": "Ubugawa"
+      },
+      {
+        "team_a": "Karasuno",
+        "team_b": "Johzenji",
+        "winner": "Johzenji"
+      },
+      {
+        "team_a": "Nekoma",
+        "team_b": "Nohebi",
+        "winner": "Nohebi"
+      },
+      {
+        "team_a": "Aoba Johsai",
+        "team_b": "Kamomedai",
+        "winner": "Kamomedai"
+      },
+      {
+        "team_a": "Shiratorizawa",
+        "team_b": "Inarizaki",
+        "winner": "Shiratorizawa"
+      },
+      {
+        "team_a": "Fukurodani",
+        "team_b": "Date Tech",
+        "winner": "Fukurodani"
+      }
+    ],
+    "3": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Shinzen",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Mujinazaka",
+        "team_b": "Wakutani",
+        "winner": "Wakutani"
+      },
+      {
+        "team_a": "Tsubakihara",
+        "team_b": "Johzenji",
+        "winner": "Johzenji"
+      },
+      {
+        "team_a": "Ubugawa",
+        "team_b": "Nohebi",
+        "winner": "Ubugawa"
+      },
+      {
+        "team_a": "Karasuno",
+        "team_b": "Kamomedai",
+        "winner": "Kamomedai"
+      },
+      {
+        "team_a": "Nekoma",
+        "team_b": "Inarizaki",
+        "winner": "Nekoma"
+      },
+      {
+        "team_a": "Aoba Johsai",
+        "team_b": "Date Tech",
+        "winner": "Aoba Johsai"
+      },
+      {
+        "team_a": "Shiratorizawa",
+        "team_b": "Fukurodani",
+        "winner": "Shiratorizawa"
+      }
+    ],
+    "4": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Wakutani",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Shinzen",
+        "team_b": "Johzenji",
+        "winner": "Shinzen"
+      },
+      {
+        "team_a": "Mujinazaka",
+        "team_b": "Nohebi",
+        "winner": "Mujinazaka"
+      },
+      {
+        "team_a": "Tsubakihara",
+        "team_b": "Kamomedai",
+        "winner": "Kamomedai"
+      },
+      {
+        "team_a": "Ubugawa",
+        "team_b": "Inarizaki",
+        "winner": "Inarizaki"
+      },
+      {
+        "team_a": "Karasuno",
+        "team_b": "Date Tech",
+        "winner": "Date Tech"
+      },
+      {
+        "team_a": "Nekoma",
+        "team_b": "Fukurodani",
+        "winner": "Nekoma"
+      },
+      {
+        "team_a": "Aoba Johsai",
+        "team_b": "Shiratorizawa",
+        "winner": "Aoba Johsai"
+      }
+    ],
+    "5": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Johzenji",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Wakutani",
+        "team_b": "Nohebi",
+        "winner": "Nohebi"
+      },
+      {
+        "team_a": "Shinzen",
+        "team_b": "Kamomedai",
+        "winner": "Shinzen"
+      },
+      {
+        "team_a": "Mujinazaka",
+        "team_b": "Inarizaki",
+        "winner": "Mujinazaka"
+      },
+      {
+        "team_a": "Tsubakihara",
+        "team_b": "Date Tech",
+        "winner": "Date Tech"
+      },
+      {
+        "team_a": "Ubugawa",
+        "team_b": "Fukurodani",
+        "winner": "Ubugawa"
+      },
+      {
+        "team_a": "Karasuno",
+        "team_b": "Shiratorizawa",
+        "winner": "Shiratorizawa"
+      },
+      {
+        "team_a": "Nekoma",
+        "team_b": "Aoba Johsai",
+        "winner": "Aoba Johsai"
+      }
+    ],
+    "6": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Nohebi",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Johzenji",
+        "team_b": "Kamomedai",
+        "winner": "Johzenji"
+      },
+      {
+        "team_a": "Wakutani",
+        "team_b": "Inarizaki",
+        "winner": "Inarizaki"
+      },
+      {
+        "team_a": "Shinzen",
+        "team_b": "Date Tech",
+        "winner": "Date Tech"
+      },
+      {
+        "team_a": "Mujinazaka",
+        "team_b": "Fukurodani",
+        "winner": "Mujinazaka"
+      },
+      {
+        "team_a": "Tsubakihara",
+        "team_b": "Shiratorizawa",
+        "winner": "Tsubakihara"
+      },
+      {
+        "team_a": "Ubugawa",
+        "team_b": "Aoba Johsai",
+        "winner": "Ubugawa"
+      },
+      {
+        "team_a": "Karasuno",
+        "team_b": "Nekoma",
+        "winner": "Karasuno"
+      }
+    ],
+    "7": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Kamomedai",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Nohebi",
+        "team_b": "Inarizaki",
+        "winner": "Inarizaki"
+      },
+      {
+        "team_a": "Johzenji",
+        "team_b": "Date Tech",
+        "winner": "Johzenji"
+      },
+      {
+        "team_a": "Wakutani",
+        "team_b": "Fukurodani",
+        "winner": "Wakutani"
+      },
+      {
+        "team_a": "Shinzen",
+        "team_b": "Shiratorizawa",
+        "winner": "Shiratorizawa"
+      },
+      {
+        "team_a": "Mujinazaka",
+        "team_b": "Aoba Johsai",
+        "winner": "Aoba Johsai"
+      },
+      {
+        "team_a": "Tsubakihara",
+        "team_b": "Nekoma",
+        "winner": "Nekoma"
+      },
+      {
+        "team_a": "Ubugawa",
+        "team_b": "Karasuno",
+        "winner": "Karasuno"
+      }
+    ],
+    "8": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Inarizaki",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Kamomedai",
+        "team_b": "Date Tech",
+        "winner": "Kamomedai"
+      },
+      {
+        "team_a": "Nohebi",
+        "team_b": "Fukurodani",
+        "winner": "Fukurodani"
+      },
+      {
+        "team_a": "Johzenji",
+        "team_b": "Shiratorizawa",
+        "winner": "Shiratorizawa"
+      },
+      {
+        "team_a": "Wakutani",
+        "team_b": "Aoba Johsai",
+        "winner": "Aoba Johsai"
+      },
+      {
+        "team_a": "Shinzen",
+        "team_b": "Nekoma",
+        "winner": "Nekoma"
+      },
+      {
+        "team_a": "Mujinazaka",
+        "team_b": "Karasuno",
+        "winner": "Mujinazaka"
+      },
+      {
+        "team_a": "Tsubakihara",
+        "team_b": "Ubugawa",
+        "winner": "Ubugawa"
+      }
+    ],
+    "9": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Date Tech",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Inarizaki",
+        "team_b": "Fukurodani",
+        "winner": "Fukurodani"
+      },
+      {
+        "team_a": "Kamomedai",
+        "team_b": "Shiratorizawa",
+        "winner": "Shiratorizawa"
+      },
+      {
+        "team_a": "Nohebi",
+        "team_b": "Aoba Johsai",
+        "winner": "Aoba Johsai"
+      },
+      {
+        "team_a": "Johzenji",
+        "team_b": "Nekoma",
+        "winner": "Nekoma"
+      },
+      {
+        "team_a": "Wakutani",
+        "team_b": "Karasuno",
+        "winner": "Karasuno"
+      },
+      {
+        "team_a": "Shinzen",
+        "team_b": "Ubugawa",
+        "winner": "Shinzen"
+      },
+      {
+        "team_a": "Mujinazaka",
+        "team_b": "Tsubakihara",
+        "winner": "Mujinazaka"
+      }
+    ],
+    "10": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Fukurodani",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Date Tech",
+        "team_b": "Shiratorizawa",
+        "winner": "Shiratorizawa"
+      },
+      {
+        "team_a": "Inarizaki",
+        "team_b": "Aoba Johsai",
+        "winner": "Aoba Johsai"
+      },
+      {
+        "team_a": "Kamomedai",
+        "team_b": "Nekoma",
+        "winner": "Kamomedai"
+      },
+      {
+        "team_a": "Nohebi",
+        "team_b": "Karasuno",
+        "winner": "Karasuno"
+      },
+      {
+        "team_a": "Johzenji",
+        "team_b": "Ubugawa",
+        "winner": "Johzenji"
+      },
+      {
+        "team_a": "Wakutani",
+        "team_b": "Tsubakihara",
+        "winner": "Wakutani"
+      },
+      {
+        "team_a": "Shinzen",
+        "team_b": "Mujinazaka",
+        "winner": "Shinzen"
+      }
+    ],
+    "11": [
+      {
+        "team_a": "Your Team",
+        "team_b": "Shiratorizawa",
+        "winner": "Your Team"
+      },
+      {
+        "team_a": "Fukurodani",
+        "team_b": "Aoba Johsai",
+        "winner": "Fukurodani"
+      },
+      {
+        "team_a": "Date Tech",
+        "team_b": "Nekoma",
+        "winner": "Date Tech"
+      },
+      {
+        "team_a": "Inarizaki",
+        "team_b": "Karasuno",
+        "winner": "Karasuno"
+      },
+      {
+        "team_a": "Kamomedai",
+        "team_b": "Ubugawa",
+        "winner": "Ubugawa"
+      },
+      {
+        "team_a": "Nohebi",
+        "team_b": "Tsubakihara",
+        "winner": "Tsubakihara"
+      },
+      {
+        "team_a": "Johzenji",
+        "team_b": "Mujinazaka",
+        "winner": "Mujinazaka"
+      },
+      {
+        "team_a": "Wakutani",
+        "team_b": "Shinzen",
+        "winner": "Wakutani"
+      }
+    ]
+  },
+  "completed_league_matches": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "playoff_active": false,
+  "playoff_team_names": [],
+  "playoff_matchups": [],
+  "playoff_history": [],
+  "playoff_round": 0,
+  "battle_wins": 17,
+  "highest_stage": 6,
+  "total_upgrades": 891,
+  "league_seasons_completed": 0,
+  "league_championships": 0,
+  "claimed_achievements": [
+    "first_victory",
+    "level_50",
+    "upgrade_10",
+    "upgrade_50"
+  ],
+  "claimed_milestones": []
+}

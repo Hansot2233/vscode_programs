@@ -1,71 +1,35 @@
-from battle_engine import get_enemy_team, simulate_match
+from battle_engine import simulate_match
 import random
+from league_factory import generate_league_teams
 
+def get_team_strength(team):
 
-TEAM_NAMES = [
-    "Karasuno",
-    "Nekoma",
-    "Aoba Johsai",
-    "Shiratorizawa",
-    "Fukurodani",
-    "Date Tech",
-    "Inarizaki",
-    "Kamomedai",
-    "Nohebi",
-    "Johzenji",
-    "Wakutani",
-    "Shinzen",
-    "Mujinazaka",
-    "Tsubakihara",
-    "Ubugawa"
-]
+    if not team:
+        return 0
 
-
-def get_team_strength(lineup):
+    players = (
+        team.values()
+        if isinstance(team, dict)
+        else team
+    )
 
     players = [
-        p for p in lineup
-        if p is not None
+        player for player in players
+        if player is not None
     ]
 
     if not players:
         return 0
 
     return sum(
-        p.strength for p in players
+        player.strength for player in players
     ) / len(players)
 
+def create_league(game, resume=False):
 
-def scale_team_to_strength(lineup, target_strength):
-
-    current_strength = get_team_strength(lineup)
-
-    if current_strength <= 0:
-        return lineup
-
-    multiplier = target_strength / current_strength
-
-    for player in lineup:
-
-        if player is None:
-            continue
-
-        player.attack = max(1, int(player.attack * multiplier))
-        player.block = max(1, int(player.block * multiplier))
-        player.receive = max(1, int(player.receive * multiplier))
-        player.setting = max(1, int(player.setting * multiplier))
-        player.serve = max(1, int(player.serve * multiplier))
-
-    return lineup
-
-
-def create_league(game):
-
-    game.league_teams = []
-    game.completed_league_matches = set()
-    game.playoff_history = []
-    game.playoff_matchups = []
-    game.league_incremented = False
+    is_resuming = (
+        resume and game.league_seed is not None
+    )
 
     your_lineup = [
         p
@@ -73,71 +37,189 @@ def create_league(game):
         if p is not None
     ]
 
-    player_strength = get_team_strength(your_lineup)
+    # -------------------------------------------------
+    # LOAD EXISTING SEASON SETTINGS
+    # -------------------------------------------------
 
-    # Minimum starts at 15% and increases by 5%
-    # for every top-4 finish, up to 90%.
-    top4_finishes = getattr(
-        game,
-        "league_top4_finishes",
-        0
-    )
+    if is_resuming:
 
-    minimum_percentage = min(
-        15 + (top4_finishes * 5),
-        90
-    )
+        seed = game.league_seed
 
-    maximum_percentage = 105
+        player_strength = game.league_generation_strength
+
+        minimum_percentage = game.league_minimum_percentage
+
+        saved_week = game.league_week
+
+        saved_schedule = game.league_schedule
+
+        saved_standings = game.league_standings
+
+        saved_results = game.league_results
+
+        saved_completed = game.completed_league_matches
+
+        saved_playoff_active = game.playoff_active
+
+        saved_playoff_names = getattr(
+            game,
+            "playoff_team_names",
+            []
+        )
+
+        saved_matchups = game.playoff_matchups
+
+        saved_history = game.playoff_history
+
+        saved_round = game.playoff_round
+
+    else:
+
+        # -------------------------------------------------
+        # GENERATE A NEW SEASON
+        # -------------------------------------------------
+
+        seed = random.randrange(0, 2**32)
+
+        # Update the permanent highest team rating.
+        game.update_highest_team_rating()
+
+        # Use the highest rating ever achieved.
+        player_strength = game.highest_team_rating
+
+        league_minimum = min(
+            15 + ((game.league_number - 1) * 5),
+            90
+        )
+
+        top4_minimum = min(
+            15 + (game.league_top4_finishes * 5),
+            90
+        )
+
+        minimum_percentage = min(
+            max(league_minimum, top4_minimum),
+            90
+        )
+
+        game.league_week = 0
+
+        game.league_results = {}
+
+        game.completed_league_matches = set()
+
+        game.league_standings = {}
+
+        game.playoff_active = False
+
+        game.playoff_teams = []
+
+        game.playoff_matchups = []
+
+        game.playoff_history = []
+
+        game.playoff_round = 0
+
+    # Store the generation information.
+    game.league_seed = seed
+
+    game.league_generation_strength = player_strength
+
+    game.league_minimum_percentage = minimum_percentage
+
+    game.league_teams = []
+
+    # -------------------------------------------------
+    # REGENERATE THE SAME OPPONENTS
+    # -------------------------------------------------
+
+    rng = random.Random(seed)
 
     game.league_teams.append({
 
         "name": "Your Team",
+
         "lineup": your_lineup,
+
         "wins": 0,
         "losses": 0,
         "played": 0,
+
         "battle_level": game.battle_level
 
     })
 
-    for name in TEAM_NAMES:
+    opponents = generate_league_teams(
+        game.league_number,
+        player_strength,
+        minimum_percentage,
+        rng
+    )
 
-        battle_level = max(
-            1,
-            game.battle_level + random.randint(-3, 3)
-        )
+    game.league_teams.extend(opponents)
 
-        lineup, _ = get_enemy_team(battle_level)
-
-        # Randomly select this opponent's target strength.
-        percentage = random.uniform(
-            minimum_percentage,
-            maximum_percentage
-        )
-
-        target_strength = (
-            player_strength * percentage / 100
-        )
-
-        lineup = scale_team_to_strength(
-            lineup,
-            target_strength
-        )
-
-        game.league_teams.append({
-
-            "name": name,
-            "lineup": lineup,
-            "wins": 0,
-            "losses": 0,
-            "played": 0,
-            "battle_level": battle_level
-
-        })
-
+    # Create the schedule.
     create_schedule(game)
 
+    # -------------------------------------------------
+    # RESTORE EXISTING SEASON PROGRESS
+    # -------------------------------------------------
+
+    if is_resuming:
+
+        game.league_schedule = saved_schedule
+
+        game.league_week = saved_week
+
+        game.league_results = saved_results
+
+        game.completed_league_matches = set(
+            saved_completed
+        )
+
+        # Restore standings using team names.
+        for team in game.league_teams:
+
+            stats = saved_standings.get(
+                team["name"],
+                {}
+            )
+
+            team["wins"] = stats.get("wins", 0)
+
+            team["losses"] = stats.get("losses", 0)
+
+            team["played"] = stats.get("played", 0)
+
+        # Restore playoff progress.
+        team_lookup = {
+            team["name"]: team
+            for team in game.league_teams
+        }
+
+        game.playoff_active = saved_playoff_active
+
+        game.playoff_teams = [
+            team_lookup[name]
+            for name in saved_playoff_names
+            if name in team_lookup
+        ]
+
+        game.playoff_matchups = saved_matchups
+
+        game.playoff_history = saved_history
+
+        game.playoff_round = saved_round
+
+    # Store a fresh standings snapshot.
+    game.league_standings = {
+        team["name"]: {
+            "wins": team["wins"],
+            "losses": team["losses"],
+            "played": team["played"]
+        }
+        for team in game.league_teams
+    }
 
 def simulate_other_matches(game, excluded_teams=None):
 
