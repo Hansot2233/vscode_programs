@@ -268,7 +268,7 @@ class PlayerUpgradeScreen(QWidget):
         cost = self.get_upgrade_cost(self.player.attack_level)
 
         if self.spend(cost):
-
+            self.game.total_upgrades += 1
             self.player.coins_spent += cost
             self.player.attack += self.get_stat_gain("attack")
             self.player.attack_level += 1
@@ -282,6 +282,7 @@ class PlayerUpgradeScreen(QWidget):
         cost = self.get_upgrade_cost(self.player.block_level)
         
         if self.spend(cost):
+            self.game.total_upgrades += 1
             self.player.coins_spent += cost
             self.player.block += self.get_stat_gain("block")
             self.player.block_level += 1
@@ -295,6 +296,7 @@ class PlayerUpgradeScreen(QWidget):
         cost = self.get_upgrade_cost(self.player.receive_level)
 
         if self.spend(cost):
+            self.game.total_upgrades += 1
             self.player.coins_spent += cost
             self.player.receive += self.get_stat_gain("receive")
             self.player.receive_level += 1
@@ -308,6 +310,7 @@ class PlayerUpgradeScreen(QWidget):
         cost = self.get_upgrade_cost(self.player.setting_level)
 
         if self.spend(cost):
+            self.game.total_upgrades += 1
             self.player.coins_spent += cost
             self.player.setting += self.get_stat_gain("setting")
             self.player.setting_level += 1
@@ -321,6 +324,7 @@ class PlayerUpgradeScreen(QWidget):
         cost = self.get_upgrade_cost(self.player.serve_level)
 
         if self.spend(cost):
+            self.game.total_upgrades += 1
             self.player.coins_spent += cost
             self.player.serve += self.get_stat_gain("serve")
             self.player.serve_level += 1
@@ -353,6 +357,8 @@ class PlayerUpgradeScreen(QWidget):
         if not self.spend(total_cost):
             return
 
+        self.game.total_upgrades += upgrades
+        
         # Apply the normal position-specific upgrade
         for _ in range(upgrades):
 

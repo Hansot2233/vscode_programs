@@ -56,6 +56,14 @@ class GameData:
         self.playoff_history = []
         self.playoff_round = 0
 
+        self.battle_wins = 0
+        self.highest_stage = 0
+        self.total_upgrades = 0
+        self.league_seasons_completed = 0
+        self.league_championships = 0
+        self.claimed_achievements = []
+        self.claimed_milestones = []
+
     def generate_player(self):
 
         r = random.random()

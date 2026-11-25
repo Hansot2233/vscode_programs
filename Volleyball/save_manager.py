@@ -63,6 +63,13 @@ def save_game(game, path):
         "league_schedule": game.league_schedule,
         "league_top4_finishes": game.league_top4_finishes,
         "league_number": game.league_number,
+        "battle_wins": game.battle_wins,
+        "highest_stage": game.highest_stage,
+        "total_upgrades": game.total_upgrades,
+        "league_seasons_completed": game.league_seasons_completed,
+        "league_championships": game.league_championships,
+        "claimed_achievements": game.claimed_achievements,
+        "claimed_milestones": game.claimed_milestones,
     }
 
     with open(path, "w", encoding="utf-8") as f:
@@ -198,32 +205,18 @@ def load_game(game, path):
 
             })
 
-        game.completed_league_matches = set(
-            data.get(
-                "completed_league_matches",
-                []
-            )
-        )
-
-        game.league_week = data.get(
-            "league_week",
-            0
-        )
-
-        game.league_schedule = data.get(
-            "league_schedule",
-            []
-        )
-        
-        game.league_top4_finishes = data.get(
-            "league_top4_finishes",
-            0
-        )
-        
-        game.league_number = data.get(
-            "league_number",
-            1
-        )
+        game.completed_league_matches = set(data.get("completed_league_matches", []))
+        game.league_week = data.get("league_week", 0)
+        game.league_schedule = data.get("league_schedule", [])
+        game.league_top4_finishes = data.get("league_top4_finishes", 0)
+        game.league_number = data.get("league_number", 1)
+        game.battle_wins = data.get("battle_wins", 0)
+        game.highest_stage = data.get("highest_stage", 0)
+        game.total_upgrades = data.get("total_upgrades", 0)
+        game.league_seasons_completed = data.get("league_seasons_completed", 0)
+        game.league_championships = data.get("league_championships", 0)
+        game.claimed_achievements = data.get("claimed_achievements", [])
+        game.claimed_milestones = data.get("claimed_milestones", [])
 
         for slot, index in data.get(
             "lineup",

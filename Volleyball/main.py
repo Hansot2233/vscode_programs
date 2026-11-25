@@ -1,7 +1,7 @@
 import sys, os
 from PyQt6.QtWidgets import *
 from game_data import GameData
-from battle_engine import simulate, get_enemy_team, play_rally
+from battle_engine import simulate_match, get_enemy_team, play_rally
 from save_manager import save_game,load_game
 from screens.team_screen import TeamScreen
 from PyQt6.QtGui import QColor
@@ -12,6 +12,8 @@ from screens.gacha_screen import GachaScreen
 from screens.battle_screen import BattleScreen
 from screens.league_screen import LeagueScreen
 from league_engine import create_league, simulate_other_matches, get_current_match
+from screens.achievement_screen import AchievementScreen
+from progression import MILESTONE_REWARDS
 
 SAVE_FILE = os.path.join(
     os.path.dirname(__file__),
@@ -48,15 +50,13 @@ class Main(QMainWindow):
         ('Recruit Players', self.show_gacha_screen),
         ('Battle', self.show_battle_screen),
         ('League', self.show_league_screen),
+        ('Achievements', self.show_achievements_screen),
+        ('Team Manager', self.show_team_screen),
         ('Save', self.save)
     ]:
         b = QPushButton(t)
         b.clicked.connect(f)
         button_layout.addWidget(b)
-
-    team_button = QPushButton("Team Manager")
-    team_button.clicked.connect(self.show_team_screen)
-    button_layout.addWidget(team_button)
 
     button_layout.addStretch()
 
@@ -70,10 +70,17 @@ class Main(QMainWindow):
 
     self.team_screen = TeamScreen(self.g)
     self.gacha_screen = GachaScreen(self.g)
+    # Stage battle display
     self.battle_screen = BattleScreen(self.g)
-    self.league_screen = LeagueScreen(self.g)
 
+    # Separate league battle display
+    self.league_battle_screen = BattleScreen(self.g)
+    self.league_battle_screen.start_button.hide()
+
+    self.league_screen = LeagueScreen(self.g)
+    self.achievement_screen = AchievementScreen(self.g)
     self.upgrade_screen = PlayerUpgradeScreen(self.g)
+    
     self.team_screen.open_upgrade_requested.connect(self.show_upgrade_screen)
     self.battle_screen.start_button.clicked.connect(self.battle)
     self.league_screen.play_button.clicked.connect(self.league_battle)
@@ -87,18 +94,23 @@ class Main(QMainWindow):
     battle_back.clicked.connect(self.show_home_screen)
     league_back = QPushButton("Back")
     league_back.clicked.connect(self.show_home_screen)
+    achievements_back = QPushButton('Back')
+    achievements_back.clicked.connect(self.show_home_screen)
 
     self.battle_screen.layout.addWidget(battle_back)
     self.gacha_screen.layout().addWidget(back_to_home)
     self.team_screen.layout().addWidget(back_button)
-    self.league_screen.layout().addWidget(league_back)    
+    self.league_screen.layout().addWidget(league_back)  
+    self.achievement_screen.layout.addWidget(achievements_back)  
 
     self.stack.addWidget(self.home_widget)
     self.stack.addWidget(self.team_screen)
     self.stack.addWidget(self.upgrade_screen)
     self.stack.addWidget(self.gacha_screen)
     self.stack.addWidget(self.battle_screen)
+    self.stack.addWidget(self.league_battle_screen)
     self.stack.addWidget(self.league_screen)
+    self.stack.addWidget(self.achievement_screen)
 
     back_to_team = QPushButton("Back")
     back_to_team.clicked.connect(self.show_team_screen)
@@ -339,6 +351,39 @@ class Main(QMainWindow):
                 f"Gems: {gems}\n"
                 f""
             )
+            
+        self.g.battle_wins += 1
+        self.g.highest_stage = max(self.g.highest_stage, stage)
+
+        milestone_text = ""
+
+        if winner and stage in MILESTONE_REWARDS:
+            claimed_milestones = set(self.g.claimed_milestones)
+
+            if stage not in claimed_milestones:
+                milestone_coins, milestone_gems = MILESTONE_REWARDS[stage]
+
+                self.g.coins += milestone_coins
+                self.g.gems += milestone_gems
+
+                claimed_milestones.add(stage)
+                self.g.claimed_milestones = sorted(claimed_milestones)
+
+                milestone_text = (
+                    f"\n\nMILESTONE REWARD — STAGE {stage}\n"
+                    f"Bonus Coins: {milestone_coins:,}\n"
+                    f"Bonus Gems: {milestone_gems:,}"
+                )
+
+                if stage == 100:
+                    special_player = self.g.generate_player_of_rarity("Legendary")
+                    self.g.roster.append(special_player)
+
+                    milestone_text += (
+                        f"\nLegendary Recruit: {special_player.name}"
+                    )
+                    
+        result_text += milestone_text
 
         # Result popup
         popup = QDialog(self)
@@ -481,26 +526,116 @@ class Main(QMainWindow):
 
     )
 
-    from battle_engine import (
-        simulate_match
+    self.league_match_mode = "regular"
+    self.league_match_opponent_name = opponent_name
+    self.league_match_your_team = your_team
+    self.league_match_opponent = team
+
+    self._start_league_rally_match(
+        [p for p in self.g.lineup.values() if p is not None],
+        team["lineup"],
+        f"League Match: Your Team vs {opponent_name}"
+    )
+      
+  def _start_league_rally_match(self, player_team, enemy_team, title):
+
+    self.league_player_team = player_team
+    self.league_enemy_team = enemy_team
+
+    self.league_player_sets = 0
+    self.league_enemy_sets = 0
+
+    self.league_player_points = 0
+    self.league_enemy_points = 0
+
+    self.league_set_scores = []
+
+    # Use the separate League Battle screen
+    self.league_battle_screen.title.setText(title)
+
+    self.league_battle_screen.score_label.setText(
+        "Set 1\n\n0 - 0\n\nSets: 0 - 0"
     )
 
-    winner, scores = simulate_match(
-
-        [
-
-            p
-
-            for p in self.g.lineup.values()
-
-            if p is not None
-
-        ],
-
-        team["lineup"]
-
+    self.league_battle_screen.summary.setText(
+        "League match in progress..."
     )
 
+    # Display the League Battle screen, not the Stage Battle screen
+    self.stack.setCurrentWidget(self.league_battle_screen)
+
+    self.play_next_league_rally()
+    
+  def play_next_league_rally(self):
+
+    if play_rally(
+        self.league_player_team,
+        self.league_enemy_team
+    ):
+        self.league_player_points += 1
+    else:
+        self.league_enemy_points += 1
+
+    self.league_battle_screen.score_label.setText(
+        f"Set {len(self.league_set_scores) + 1}\n\n"
+        f"{self.league_player_points} - {self.league_enemy_points}\n\n"
+        f"Sets: {self.league_player_sets} - {self.league_enemy_sets}\n\n"
+        f"Completed Sets: {' | '.join(self.league_set_scores)}"
+    )
+
+    set_finished = (
+        (self.league_player_points >= 25 or
+         self.league_enemy_points >= 25)
+        and abs(
+            self.league_player_points - self.league_enemy_points
+        ) >= 2
+    )
+
+    if set_finished:
+
+        self.league_set_scores.append(
+            f"{self.league_player_points}-{self.league_enemy_points}"
+        )
+
+        if self.league_player_points > self.league_enemy_points:
+            self.league_player_sets += 1
+        else:
+            self.league_enemy_sets += 1
+
+        self.league_battle_screen.score_label.setText(
+            f"Set {len(self.league_set_scores)} Complete!\n\n"
+            f"{self.league_player_points} - {self.league_enemy_points}\n\n"
+            f"Sets: {self.league_player_sets} - {self.league_enemy_sets}\n\n"
+            f"Completed Sets: {' | '.join(self.league_set_scores)}"
+        )
+
+        if self.league_player_sets == 3 or self.league_enemy_sets == 3:
+            QTimer.singleShot(500, self.finish_league_rally_match)
+            return
+
+        self.league_player_points = 0
+        self.league_enemy_points = 0
+
+    QTimer.singleShot(100, self.play_next_league_rally)
+    
+  def finish_league_rally_match(self):
+  
+    winner = self.league_player_sets > self.league_enemy_sets
+    scores = list(self.league_set_scores)
+  
+    self.league_battle_screen.start_button.setEnabled(True)
+  
+    if getattr(self, "league_match_mode", "regular") == "playoff":
+        self.finish_playoff_rally_match(winner, scores)
+    else:
+        self.finish_regular_league_rally_match(winner, scores)
+        
+  def finish_regular_league_rally_match(self, winner, scores):
+
+    your_team = self.league_match_your_team
+    team = self.league_match_opponent
+    opponent_name = self.league_match_opponent_name
+    
     if winner:
 
         self.g.coins += 50
@@ -625,6 +760,9 @@ class Main(QMainWindow):
 
     self.league_screen.refresh()
     self.refresh()
+    
+    # Close the League Battle display and return to the League screen
+    self.stack.setCurrentWidget(self.league_screen)
 
     if (self.g.league_week >= len(self.g.league_schedule)):
 
@@ -674,6 +812,7 @@ class Main(QMainWindow):
           gems = 50
 
       self.g.gems += gems
+      self.g.league_seasons_completed += 1
 
       msg = QMessageBox(self)
 
@@ -826,281 +965,219 @@ class Main(QMainWindow):
 
   def playoff_battle(self):
 
-    opponent = (
-        self.get_playoff_opponent()
+    opponent = self.get_playoff_opponent()
+
+    if opponent is None:
+        return
+
+    self.league_match_opponent = opponent
+    self.league_match_mode = "playoff"
+
+    self._start_league_rally_match(
+        [p for p in self.g.lineup.values() if p is not None],
+        opponent["lineup"],
+        f"PLAYOFFS - Round {self.g.playoff_round}: vs {opponent['name']}"
     )
+    
+  
+  def finish_playoff_rally_match(self, winner, scores):
 
-    from battle_engine import (
-        simulate_match
-    )
+    opponent = self.league_match_opponent
+    opponent_name = opponent["name"]
 
-    winner, scores = simulate_match(
-
-        [
-            p
-            for p in self.g.lineup.values()
-            if p is not None
-        ],
-
-        opponent["lineup"]
-
-    )
-
+    # Build the result message first, including every set score.
     result_text = (
-      f"PLAYOFFS\n\n"
-      f"Round "
-      f"{self.g.playoff_round}\n\n"
-      f"Your Team vs "
-      f"{opponent['name']}\n\n"
+        f"{'PLAYOFF VICTORY!' if winner else 'PLAYOFF DEFEAT'}\n\n"
+        f"Round {self.g.playoff_round}\n\n"
+        f"Your Team vs {opponent_name}\n\n"
+        f"Set Scores:\n"
     )
 
     for score in scores:
+        if isinstance(score, tuple):
+            result_text += f"{score[0]}-{score[1]}\n"
+        else:
+            result_text += f"{score}\n"
 
-      if isinstance(score, tuple):
-
-          result_text += (
-              f"{score[0]}-{score[1]}\n"
-          )
-
-      else:
-
-          result_text += (
-              str(score) + "\n"
-          )
-
+    # Handle a playoff victory exactly once.
     if winner:
 
-      self.g.coins += 2500
-
-      result_text += (
-        "\nReward:\n"
-        "2500 Coins"
-      )
-
-      msg = QMessageBox(self)
-
-      msg.setWindowTitle(
-          "Playoff Victory"
-      )
-
-      msg.setText(
-          result_text
-      )
-
-      msg.setIcon(
-          QMessageBox.Icon.NoIcon
-      )
-
-      msg.exec()
-
-      self.g.playoff_teams.remove(
-          opponent
-      )
-
-      survivors = []
-
-      # Keep Your Team alive since it already won
-
-      your_team_entry = next(
-
-          team
-
-          for team in self.g.playoff_teams
-
-          if team["name"] == "Your Team"
-
-      )
-
-      survivors.append(
-          your_team_entry
-      )
-
-      # Remove Your Team from AI simulation
-
-      teams = [
-
-          team
-
-          for team in self.g.playoff_teams
-
-          if team["name"] != "Your Team"
-
-      ]
-
-      while len(teams) >= 2:
-
-          high = teams.pop(0)
-
-          low = teams.pop(-1)
-
-          ai_winner, _ = simulate_match(
-
-              high["lineup"],
-              low["lineup"]
-
-          )
-
-          survivors.append(
-
-              high
-
-              if ai_winner
-
-              else low
-
-          )
-
-      self.g.playoff_teams = survivors
-
-      self.g.playoff_history.append(
-
-        {
-            "round": self.g.playoff_round,
-            "teams": [
-
-                team["name"]
-
-                for team in survivors
-
-            ]
-          }
-      )
-
-      self.g.playoff_matchups = []
-      winners = [
-
-          team["name"]
-
-          for team in survivors
-
-      ]
-
-      if self.g.playoff_round == 1:
-
-        self.g.playoff_matchups = [
-
-            (
-                winners[0],
-                winners[7]
-            ),
-
-            (
-                winners[1],
-                winners[6]
-            ),
-
-            (
-                winners[2],
-                winners[5]
-            ),
-
-            (
-                winners[3],
-                winners[4]
-            )
-
-        ]
-
-      elif self.g.playoff_round == 2:
-
-        self.g.playoff_matchups = [
-
-            (
-                winners[0],
-                winners[3]
-            ),
-
-            (
-                winners[1],
-                winners[2]
-            )
-
-        ]
-
-      elif self.g.playoff_round == 3:
-
-        self.g.playoff_matchups = [
-
-            (
-                winners[0],
-                winners[1]
-            )
-
-        ]
-
-      self.g.playoff_round += 1
-
-      if (
-          self.g.playoff_round == 3
-          and
-          not getattr(
-              self.g,
-              "league_incremented",
-              False
-          )
-      ):
-
-          self.g.league_number += 1
-
-          self.g.league_incremented = True
-
-      if len(self.g.playoff_teams) == 1:
-         
-         champion = (self.g.playoff_teams[0])
-
-         if champion["name"] == "Your Team":
-            
-            self.g.coins += 10000
-
-            QMessageBox(
-                QMessageBox.Icon.NoIcon,
-                "Champion",
-                "You won the league!\n\n"
-                "Reward:\n"
-                "10,000 Coins"
-            ).exec()
-
-            self.g.playoff_active = False
-
-            create_league(self.g)
-
-    if not winner:
-
-        self.g.playoff_active = False
+        self.g.coins += 2500
+
+        result_text += (
+            "\nReward:\n"
+            "2,500 Coins"
+        )
 
         msg = QMessageBox(self)
-
-        msg.setWindowTitle(
-            "Playoffs Eliminated"
-        )
-
-        msg.setText(
-            result_text +
-            "\n\nYour playoff run has ended."
-        )
-
-        msg.setIcon(
-            QMessageBox.Icon.NoIcon
-        )
-
+        msg.setWindowTitle("Playoff Victory!")
+        msg.setText(result_text)
+        msg.setIcon(QMessageBox.Icon.NoIcon)
         msg.exec()
 
-        create_league(
-            self.g
+        # Find the defeated opponent in the bracket.
+        # Prefer the exact team object used to start the match.
+        opponent_entry = next(
+            (
+                team for team in self.g.playoff_teams
+                if team is opponent
+            ),
+            None
         )
 
-        self.league_screen.refresh()
+        # Fall back to the team name if necessary.
+        if opponent_entry is None:
+            opponent_entry = next(
+                (
+                    team for team in self.g.playoff_teams
+                    if team["name"] == opponent_name
+                ),
+                None
+            )
 
-        self.refresh()
+        if opponent_entry is None:
+            QMessageBox.warning(
+                self,
+                "Playoff Error",
+                f"{opponent_name} could not be found in the playoff bracket."
+            )
+            return
 
-        self.stack.setCurrentWidget(
-            self.league_screen
+        # Remove the defeated opponent exactly once.
+        self.g.playoff_teams = [
+            team for team in self.g.playoff_teams
+            if team is not opponent_entry
+        ]
+
+        # Keep Your Team in the playoffs.
+        your_team_entry = next(
+            (
+                team for team in self.g.playoff_teams
+                if team["name"] == "Your Team"
+            ),
+            None
         )
 
-        return
+        if your_team_entry is None:
+            QMessageBox.warning(
+                self,
+                "Playoff Error",
+                "Your Team could not be found in the playoff bracket."
+            )
+            return
 
+        survivors = [your_team_entry]
+
+        # Simulate the remaining AI matches.
+        teams = [
+            team for team in self.g.playoff_teams
+            if team["name"] != "Your Team"
+        ]
+
+        while len(teams) >= 2:
+
+            high = teams.pop(0)
+            low = teams.pop(-1)
+
+            ai_winner, _ = simulate_match(
+                high["lineup"],
+                low["lineup"]
+            )
+
+            survivors.append(
+                high if ai_winner else low
+            )
+
+        self.g.playoff_teams = survivors
+
+        # Record the round results.
+        self.g.playoff_history.append({
+            "round": self.g.playoff_round,
+            "teams": [
+                team["name"] for team in survivors
+            ]
+        })
+
+        winners = [
+            team["name"] for team in survivors
+        ]
+
+        # Generate the next round's matchups.
+        self.g.playoff_matchups = []
+
+        if self.g.playoff_round == 1 and len(winners) >= 8:
+
+            self.g.playoff_matchups = [
+                (winners[0], winners[7]),
+                (winners[1], winners[6]),
+                (winners[2], winners[5]),
+                (winners[3], winners[4])
+            ]
+
+        elif self.g.playoff_round == 2 and len(winners) >= 4:
+
+            self.g.playoff_matchups = [
+                (winners[0], winners[3]),
+                (winners[1], winners[2])
+            ]
+
+        elif self.g.playoff_round == 3 and len(winners) >= 2:
+
+            self.g.playoff_matchups = [
+                (winners[0], winners[1])
+            ]
+
+        # Advance the playoff round.
+        self.g.playoff_round += 1
+
+        if (
+            self.g.playoff_round == 3
+            and not getattr(self.g, "league_incremented", False)
+        ):
+            self.g.league_number += 1
+            self.g.league_incremented = True
+
+        # Check whether Your Team won the championship.
+        if len(self.g.playoff_teams) == 1:
+
+            champion = self.g.playoff_teams[0]
+
+            if champion["name"] == "Your Team":
+
+                self.g.coins += 10000
+
+                QMessageBox(
+                    QMessageBox.Icon.NoIcon,
+                    "League Champion!",
+                    "YOU WON THE LEAGUE!\n\n"
+                    "Championship Reward:\n"
+                    "10,000 Coins"
+                ).exec()
+
+                self.g.league_championships += 1
+                self.g.playoff_active = False
+
+                create_league(self.g)
+
+    else:
+
+        # Handle playoff elimination.
+        result_text += "\n\nYour playoff run has ended."
+
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Playoffs Eliminated")
+        msg.setText(result_text)
+        msg.setIcon(QMessageBox.Icon.NoIcon)
+        msg.exec()
+
+        self.g.playoff_active = False
+        create_league(self.g)
+
+    # Refresh and return to the League screen.
     self.league_screen.refresh()
     self.refresh()
+
+    self.stack.setCurrentWidget(self.league_screen)
 
   def reset_league(self):
 
@@ -1226,6 +1303,10 @@ class Main(QMainWindow):
     self.stack.setCurrentWidget(
         self.league_screen
     )
+    
+  def show_achievements_screen(self):
+    self.achievement_screen.refresh()
+    self.stack.setCurrentWidget(self.achievement_screen)
 
 
 
